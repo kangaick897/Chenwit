@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Edit3, Eye, Plus, Search, Upload } from "lucide-react";
+import { Edit3, Eye, Plus, Search } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { houses } from "@/data/houses";
@@ -24,10 +24,6 @@ export default function AdminHousesPage() {
           <input type="search" placeholder="ค้นหา CH B 420" />
         </label>
         <div className="admin-toolbar-actions">
-          <button type="button" className="admin-secondary-button">
-            <Upload size={16} strokeWidth={1.8} />
-            อัปโหลดรูป
-          </button>
           <button type="button" className="admin-primary-button">
             <Plus size={16} strokeWidth={1.8} />
             เพิ่มแบบบ้าน

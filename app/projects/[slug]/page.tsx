@@ -37,12 +37,14 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const categoryLabel =
     projectCategories.find((category) => category.slug === project.category)?.label ?? project.category;
 
+  const showDetails = project.showDetails ?? true;
   const facts = [
     { label: "สถานะ", value: project.status, icon: Hammer },
     { label: "ปีที่ดำเนินงาน", value: project.year, icon: CalendarDays },
     { label: "พื้นที่โดยประมาณ", value: project.area, icon: Ruler },
     { label: "ขอบเขตงาน", value: project.scope, icon: Check },
-  ];
+  ].filter((fact) => fact.value.trim().length > 0);
+  const visibleGallery = project.gallery.slice(0, 9);
 
   return (
     <>
@@ -70,40 +72,21 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               <Image src={project.image} alt={project.title} fill priority sizes="(max-width: 760px) 100vw, 1216px" />
             </div>
 
-            <div className="project-detail-facts">
-              {facts.map((fact) => {
-                const Icon = fact.icon;
+            {showDetails && facts.length > 0 ? (
+              <div className="project-detail-facts">
+                {facts.map((fact) => {
+                  const Icon = fact.icon;
 
-                return (
-                  <div className="project-detail-fact" key={fact.label}>
-                    <Icon size={22} strokeWidth={1.5} />
-                    <span>{fact.label}</span>
-                    <strong>{fact.value}</strong>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="project-detail-body">
-              <section>
-                <p className="eyebrow">DETAIL</p>
-                <h2>รายละเอียดผลงาน</h2>
-                <p className="detail-lead">{project.description}</p>
-              </section>
-
-              <section className="project-highlight-panel">
-                <p className="eyebrow">HIGHLIGHT</p>
-                <h2>จุดเด่นของงาน</h2>
-                <ul>
-                  {project.highlights.map((highlight) => (
-                    <li key={highlight}>
-                      <Check size={17} strokeWidth={1.8} />
-                      <span>{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </div>
+                  return (
+                    <div className="project-detail-fact" key={fact.label}>
+                      <Icon size={22} strokeWidth={1.5} />
+                      <span>{fact.label}</span>
+                      <strong>{fact.value}</strong>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
 
             <section className="project-gallery-section">
               <div className="section-heading">
@@ -114,7 +97,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 <p>รวมภาพบรรยากาศหน้างานและรายละเอียดที่ช่วยให้เห็นขอบเขตผลงานชัดขึ้น</p>
               </div>
               <div className="project-gallery-grid">
-                {project.gallery.map((image, index) => (
+                {visibleGallery.map((image, index) => (
                   <div className="project-gallery-item" key={`${image}-${index}`}>
                     <Image src={image} alt={`${project.title} รูปที่ ${index + 1}`} fill sizes="(max-width: 760px) 100vw, 33vw" />
                   </div>

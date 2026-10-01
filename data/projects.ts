@@ -1,6 +1,7 @@
 export type ProjectCategory = {
   slug: string;
   label: string;
+  showInFilter?: boolean;
 };
 
 export type Project = {
@@ -16,15 +17,17 @@ export type Project = {
   description: string;
   highlights: string[];
   gallery: string[];
+  showDetails?: boolean;
 };
 
-export const projectCategories: ProjectCategory[] = [
-  { slug: "all", label: "ทั้งหมด" },
+export const projectCategoryOptions: ProjectCategory[] = [
   { slug: "completed", label: "งานเสร็จแล้ว" },
   { slug: "construction", label: "งานก่อสร้าง" },
   { slug: "turnkey", label: "งานต่อเติม" },
   { slug: "renovation", label: "งานรีโนเวท" },
 ];
+
+export const projectCategories: ProjectCategory[] = [{ slug: "all", label: "ทั้งหมด" }, ...projectCategoryOptions];
 
 const gallerySet = [
   "/assets/houses/ch-b-420.png",

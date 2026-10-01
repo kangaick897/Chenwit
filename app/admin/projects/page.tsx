@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Edit3, Eye, Plus, Search, Upload } from "lucide-react";
+import Link from "next/link";
+import { Edit3, Eye, Plus, Search, Tags, Trash2 } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { projectCategories, projects } from "@/data/projects";
+import { projectCategories, projectCategoryOptions, projects } from "@/data/projects";
 
 export const metadata: Metadata = {
   title: "Admin Projects",
@@ -25,10 +26,6 @@ export default function AdminProjectsPage() {
           <input type="search" placeholder="ค้นหาผลงานหรือสถานที่" />
         </label>
         <div className="admin-toolbar-actions">
-          <button type="button" className="admin-secondary-button">
-            <Upload size={16} strokeWidth={1.8} />
-            อัปโหลดแกลเลอรี
-          </button>
           <button type="button" className="admin-primary-button">
             <Plus size={16} strokeWidth={1.8} />
             เพิ่มผลงาน
@@ -36,31 +33,81 @@ export default function AdminProjectsPage() {
         </div>
       </section>
 
-      <section className="admin-project-grid" aria-label="รายการผลงาน">
-        {projects.slice(0, 8).map((project) => (
-          <article className="admin-project-card" key={project.slug}>
-            <div className="admin-project-image">
-              <Image src={project.image} alt={project.title} fill sizes="(max-width: 760px) 100vw, 25vw" />
+      <details className="admin-package-panel admin-collapsible-panel" aria-labelledby="admin-project-categories-title">
+        <summary className="admin-collapsible-summary">
+          <div>
+            <p className="admin-eyebrow">Categories</p>
+            <h2 id="admin-project-categories-title">หมวดหมู่ผลงาน</h2>
+          </div>
+          <span>ย่อ/ขยาย</span>
+        </summary>
+
+        <div className="admin-collapsible-body">
+          <button type="button" className="admin-secondary-button">
+            <Plus size={16} strokeWidth={1.8} />
+            เพิ่มหมวดหมู่
+          </button>
+
+          <div className="admin-category-list">
+            {projectCategoryOptions.map((category) => {
+              const count = projects.filter((project) => project.category === category.slug).length;
+
+              return (
+                <div className="admin-category-row" key={category.slug}>
+                  <div>
+                    <Tags size={17} strokeWidth={1.8} />
+                    <strong>{category.label}</strong>
+                    <span>{count} ผลงาน</span>
+                  </div>
+                  <div className="admin-row-actions">
+                    <button type="button" aria-label={`แก้ไขหมวด ${category.label}`}>
+                      <Edit3 size={16} strokeWidth={1.8} />
+                    </button>
+                    <button type="button" aria-label={`ลบหมวด ${category.label}`}>
+                      <Trash2 size={16} strokeWidth={1.8} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </details>
+
+      <section className="admin-table-panel" aria-label="รายการผลงาน">
+        <div className="admin-table-head admin-project-table-head">
+          <span>ผลงาน</span>
+          <span>หมวดหมู่</span>
+          <span>จัดการ</span>
+        </div>
+
+        {projects.map((project) => (
+          <article className="admin-table-row admin-project-table-row" key={project.slug}>
+            <div className="admin-item-cell">
+              <div className="admin-thumb">
+                <Image src={project.image} alt={project.title} fill sizes="96px" />
+              </div>
+              <div>
+                <strong>{project.title}</strong>
+                <span>{project.location}</span>
+              </div>
             </div>
-            <div className="admin-project-body">
-              <span className="admin-status">{categoryLabelBySlug.get(project.category) ?? project.category}</span>
-              <h2>{project.title}</h2>
-              <p>{project.location}</p>
-              <div className="admin-project-meta">
-                <span>{project.status}</span>
-                <span>{project.year}</span>
-                <span>{project.area}</span>
-              </div>
-              <div className="admin-project-actions">
-                <button type="button">
-                  <Eye size={15} strokeWidth={1.8} />
-                  ดู
-                </button>
-                <button type="button">
-                  <Edit3 size={15} strokeWidth={1.8} />
-                  แก้ไข
-                </button>
-              </div>
+            <div className="admin-muted-cell">{categoryLabelBySlug.get(project.category) ?? project.category}</div>
+            <div className="admin-row-actions">
+              <Link
+                href={`/projects/${project.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`ดูตัวอย่าง ${project.title}`}
+              >
+                <Eye size={16} strokeWidth={1.8} />
+              </Link>
+              <Link href={`/admin/projects/${project.slug}/edit`} aria-label={`แก้ไข ${project.title}`}>
+                <Edit3 size={16} strokeWidth={1.8} />
+              </Link>
+              <button type="button" aria-label={`ลบ ${project.title}`}>
+                <Trash2 size={16} strokeWidth={1.8} />
+              </button>
             </div>
           </article>
         ))}

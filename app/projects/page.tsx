@@ -39,8 +39,11 @@ function getProjectHref(category: string, page: number) {
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
   const params = await searchParams;
+  const visibleCategories = projectCategories.filter(
+    (category) => category.slug === "all" || category.showInFilter !== false,
+  );
   const requestedCategory = params?.category ?? "all";
-  const activeCategory = projectCategories.some((category) => category.slug === requestedCategory)
+  const activeCategory = visibleCategories.some((category) => category.slug === requestedCategory)
     ? requestedCategory
     : "all";
   const requestedPage = Number(params?.page ?? "1");
@@ -68,7 +71,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
         <section className="page-content portfolio-page">
           <div className="container">
             <div className="portfolio-tabs" aria-label="หมวดหมู่ผลงาน">
-              {projectCategories.map((category) => {
+              {visibleCategories.map((category) => {
                 const count =
                   category.slug === "all"
                     ? projects.length
