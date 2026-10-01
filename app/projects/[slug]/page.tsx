@@ -1,0 +1,138 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft, CalendarDays, Check, Hammer, MapPin, Ruler } from "lucide-react";
+import { notFound } from "next/navigation";
+
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { StickyContact } from "@/components/sticky-contact";
+import { projectCategories, projects } from "@/data/projects";
+
+type ProjectDetailPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+export function generateStaticParams() {
+  return projects.map((project) => ({ slug: project.slug }));
+}
+
+export async function generateMetadata({ params }: ProjectDetailPageProps) {
+  const { slug } = await params;
+  const project = projects.find((item) => item.slug === slug);
+
+  return {
+    title: project ? `${project.title} | ผลงาน` : "ผลงาน",
+    description: project?.description,
+  };
+}
+
+export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  const { slug } = await params;
+  const project = projects.find((item) => item.slug === slug);
+
+  if (!project) {
+    notFound();
+  }
+
+  const categoryLabel =
+    projectCategories.find((category) => category.slug === project.category)?.label ?? project.category;
+
+  const facts = [
+    { label: "สถานะ", value: project.status, icon: Hammer },
+    { label: "ปีที่ดำเนินงาน", value: project.year, icon: CalendarDays },
+    { label: "พื้นที่โดยประมาณ", value: project.area, icon: Ruler },
+    { label: "ขอบเขตงาน", value: project.scope, icon: Check },
+  ];
+
+  return (
+    <>
+      <SiteHeader />
+      <main className="page-main">
+        <section className="page-content project-detail-page">
+          <div className="container">
+            <Link className="text-link" href="/projects">
+              <ArrowLeft size={16} strokeWidth={1.5} />
+              กลับไปดูผลงาน
+            </Link>
+
+            <div className="project-detail-intro">
+              <div>
+                <p className="eyebrow">{categoryLabel}</p>
+                <h1>{project.title}</h1>
+                <p className="project-location">
+                  <MapPin size={14} strokeWidth={1.4} />
+                  {project.location}
+                </p>
+              </div>
+            </div>
+
+            <div className="project-detail-hero">
+              <Image src={project.image} alt={project.title} fill priority sizes="(max-width: 760px) 100vw, 1216px" />
+            </div>
+
+            <div className="project-detail-facts">
+              {facts.map((fact) => {
+                const Icon = fact.icon;
+
+                return (
+                  <div className="project-detail-fact" key={fact.label}>
+                    <Icon size={22} strokeWidth={1.5} />
+                    <span>{fact.label}</span>
+                    <strong>{fact.value}</strong>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="project-detail-body">
+              <section>
+                <p className="eyebrow">DETAIL</p>
+                <h2>รายละเอียดผลงาน</h2>
+                <p className="detail-lead">{project.description}</p>
+              </section>
+
+              <section className="project-highlight-panel">
+                <p className="eyebrow">HIGHLIGHT</p>
+                <h2>จุดเด่นของงาน</h2>
+                <ul>
+                  {project.highlights.map((highlight) => (
+                    <li key={highlight}>
+                      <Check size={17} strokeWidth={1.8} />
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+
+            <section className="project-gallery-section">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">GALLERY</p>
+                  <h2>ภาพเพิ่มเติม</h2>
+                </div>
+                <p>รวมภาพบรรยากาศหน้างานและรายละเอียดที่ช่วยให้เห็นขอบเขตผลงานชัดขึ้น</p>
+              </div>
+              <div className="project-gallery-grid">
+                {project.gallery.map((image, index) => (
+                  <div className="project-gallery-item" key={`${image}-${index}`}>
+                    <Image src={image} alt={`${project.title} รูปที่ ${index + 1}`} fill sizes="(max-width: 760px) 100vw, 33vw" />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <div className="project-detail-bottom">
+              <Link className="text-link" href="/projects">
+                <ArrowLeft size={16} strokeWidth={1.5} />
+                กลับไปดูผลงานทั้งหมด
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+      <StickyContact />
+    </>
+  );
+}
