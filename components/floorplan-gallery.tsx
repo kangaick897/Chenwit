@@ -35,8 +35,6 @@ export function FloorPlanGallery({ floorPlans }: { floorPlans: FloorPlan[] }) {
     };
   }, [lightboxOpen]);
 
-  const getFloorLabel = (title: string) => title.replace("แปลน", "").trim();
-
   return (
     <>
       <div className="floorplan-tabs" role="tablist" aria-label="เลือกชั้นของแบบแปลน">
@@ -52,7 +50,7 @@ export function FloorPlanGallery({ floorPlans }: { floorPlans: FloorPlan[] }) {
             onClick={() => setSelectedIndex(index)}
           >
             <span aria-hidden="true" />
-            {getFloorLabel(plan.title)}
+            {plan.title}
           </button>
         ))}
       </div>

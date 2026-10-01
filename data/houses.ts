@@ -22,11 +22,11 @@ export type House = {
 
 const mockFloorPlans = [
   {
-    title: "แปลนชั้น 1",
+    title: "ชั้น 1",
     image: "/assets/floorplans/mock-floor-1.png",
   },
   {
-    title: "แปลนชั้น 2",
+    title: "ชั้น 2",
     image: "/assets/floorplans/mock-floor-2.png",
   },
 ];

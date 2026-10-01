@@ -48,12 +48,6 @@ export function SiteHeader() {
     };
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsHidden(false);
-    }
-  }, [isOpen]);
-
   const headerClassName = `site-header${isHidden && !isOpen ? " is-hidden" : ""}`;
 
   return (
@@ -89,7 +83,12 @@ export function SiteHeader() {
             type="button"
             aria-label={isOpen ? "ปิดเมนู" : "เปิดเมนู"}
             aria-expanded={isOpen}
-            onClick={() => setIsOpen((current) => !current)}
+            onClick={() => {
+              if (!isOpen) {
+                setIsHidden(false);
+              }
+              setIsOpen((current) => !current);
+            }}
           >
             {isOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
           </button>
