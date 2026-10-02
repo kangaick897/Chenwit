@@ -5,23 +5,16 @@ import { ArrowLeft, Eye } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { HouseEditorForm } from "@/app/admin/houses/_components/house-editor-form";
-import { houses } from "@/data/houses";
+import { getAdminHouseBySlug } from "@/lib/admin-houses";
 
 type AdminHouseEditPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ error?: string; saved?: string }>;
 };
-
-function findHouse(slug: string) {
-  return houses.find((house) => house.slug === slug) ?? null;
-}
-
-export function generateStaticParams() {
-  return houses.map((house) => ({ slug: house.slug }));
-}
 
 export async function generateMetadata({ params }: AdminHouseEditPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const house = findHouse(slug);
+  const house = await getAdminHouseBySlug(slug);
 
   return {
     title: house ? `Edit ${house.code}` : "Edit House",
@@ -29,9 +22,10 @@ export async function generateMetadata({ params }: AdminHouseEditPageProps): Pro
   };
 }
 
-export default async function AdminHouseEditPage({ params }: AdminHouseEditPageProps) {
+export default async function AdminHouseEditPage({ params, searchParams }: AdminHouseEditPageProps) {
   const { slug } = await params;
-  const house = findHouse(slug);
+  const query = await searchParams;
+  const house = await getAdminHouseBySlug(slug);
 
   if (!house) {
     notFound();
@@ -60,6 +54,8 @@ export default async function AdminHouseEditPage({ params }: AdminHouseEditPageP
         </Link>
       </div>
 
+      {query?.saved === "1" ? <p className="admin-form-status is-success">บันทึกแบบบ้านเรียบร้อยแล้ว</p> : null}
+      {query?.error === "save" ? <p className="admin-form-status is-error">บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
       <HouseEditorForm house={house} />
     </AdminShell>
   );

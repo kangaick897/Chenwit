@@ -167,6 +167,26 @@
   font-weight: 700;
 }
 
+.admin-form-status {
+  margin: 0 0 18px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-form-status.is-success {
+  border: 1px solid rgb(61 112 80 / 20%);
+  background: rgb(61 112 80 / 10%);
+  color: #3d7050;
+}
+
+.admin-form-status.is-error {
+  border: 1px solid rgb(143 63 44 / 22%);
+  background: rgb(143 63 44 / 8%);
+  color: #8f3f2c;
+}
+
 .admin-shell {
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr);
@@ -555,6 +575,14 @@
   width: 34px;
 }
 
+.admin-empty-state {
+  padding: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 750;
+  text-align: center;
+}
+
 .admin-detail-actions {
   display: flex;
   flex-wrap: wrap;
@@ -641,11 +669,15 @@
   pointer-events: none;
 }
 
+.admin-house-edit-form {
+  display: grid;
+  gap: 18px;
+}
+
 .admin-house-editor {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 18px;
-  margin-bottom: 18px;
 }
 
 .admin-form-grid {
@@ -678,36 +710,6 @@
 .admin-field-icon.align-start {
   align-items: start;
   padding-top: 12px;
-}
-
-.admin-settings-wide {
-  grid-column: 1 / -1;
-}
-
-.admin-theme-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.admin-theme-field {
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.admin-color-control {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 10px;
-}
-
-.admin-color-control input[type="color"] {
-  width: 44px;
-  height: 44px;
-  padding: 4px;
-  cursor: pointer;
 }
 
 .admin-house-cover-row {
@@ -1254,7 +1256,6 @@
   .admin-floorplan-grid,
   .admin-package-grid,
   .admin-display-option-grid,
-  .admin-theme-grid,
   .admin-form-grid.two-cols {
     grid-template-columns: 1fr;
   }

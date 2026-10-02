@@ -4,14 +4,16 @@ import Link from "next/link";
 import { Edit3, Eye, Plus, Search } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { houses } from "@/data/houses";
+import { getAdminHouses } from "@/lib/admin-houses";
 
 export const metadata: Metadata = {
   title: "Admin Houses",
   description: "จัดการแบบบ้านสำหรับเว็บไซต์",
 };
 
-export default function AdminHousesPage() {
+export default async function AdminHousesPage() {
+  const houses = await getAdminHouses();
+
   return (
     <AdminShell
       active="houses"
@@ -44,19 +46,21 @@ export default function AdminHousesPage() {
           <article className="admin-table-row" key={house.slug}>
             <div className="admin-item-cell">
               <div className="admin-thumb">
-                <Image src={house.image} alt={house.name} fill sizes="96px" />
+                <Image src={house.coverImageUrl} alt={house.name} fill sizes="96px" />
               </div>
               <div>
                 <strong>{house.name}</strong>
                 <span>{house.style}</span>
               </div>
             </div>
-            <div className="admin-price-cell">{house.startingPrice}</div>
+            <div className="admin-price-cell">{house.startingPrice || "สอบถามราคา"}</div>
             <div className="admin-muted-cell">
               {house.bedrooms} ห้องนอน · {house.bathrooms} ห้องน้ำ · {house.parking} จอด
             </div>
             <div>
-              <span className="admin-status is-live">เผยแพร่</span>
+              <span className={house.isPublished ? "admin-status is-live" : "admin-status"}>
+                {house.isPublished ? "เผยแพร่" : "ซ่อนอยู่"}
+              </span>
             </div>
             <div className="admin-row-actions">
               <Link
@@ -73,6 +77,7 @@ export default function AdminHousesPage() {
             </div>
           </article>
         ))}
+        {houses.length === 0 ? <div className="admin-empty-state">ยังไม่มีแบบบ้านในระบบ</div> : null}
       </section>
     </AdminShell>
   );

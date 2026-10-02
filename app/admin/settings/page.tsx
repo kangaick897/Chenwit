@@ -1,33 +1,65 @@
 import type { Metadata } from "next";
-import { Building2, Clock, ExternalLink, Mail, MapPin, MessageCircle, Palette, Phone, Save, Share2 } from "lucide-react";
+import { Building2, Clock, ExternalLink, Mail, MapPin, MessageCircle, Phone, Save, Share2 } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { saveAdminSettings } from "@/app/admin/actions";
 import { siteConfig } from "@/config/site";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Admin Settings",
   description: "ตั้งค่าข้อมูลบริษัทและช่องทางติดต่อ",
 };
 
-export default function AdminSettingsPage() {
-  const themeFields = [
-    { key: "navy", label: "สีกรม / ตัวอักษรหลัก", value: siteConfig.theme.navy },
-    { key: "gold", label: "สีทอง / Accent", value: siteConfig.theme.gold },
-    { key: "ivory", label: "สีพื้นขาว", value: siteConfig.theme.ivory },
-    { key: "cream", label: "สีพื้นรอง", value: siteConfig.theme.cream },
-    { key: "taupe", label: "สีน้ำตาลเทา", value: siteConfig.theme.taupe },
-    { key: "grayBeige", label: "สีเส้นขอบ", value: siteConfig.theme.grayBeige },
-    { key: "charcoal", label: "สีปุ่มหลัก", value: siteConfig.theme.charcoal },
-  ];
+type AdminSettingsPageProps = {
+  searchParams?: Promise<{
+    error?: string;
+    saved?: string;
+  }>;
+};
+
+type ContactSettings = {
+  officeTitle?: string;
+  phone?: string;
+  lineId?: string;
+  lineUrl?: string;
+  email?: string;
+  facebook?: string;
+  facebookLabel?: string;
+  address?: string;
+  businessHours?: string[];
+};
+
+type SeoSettings = {
+  description?: string;
+};
+
+export default async function AdminSettingsPage({ searchParams }: AdminSettingsPageProps) {
+  const params = await searchParams;
+  const supabase = await createServerSupabaseClient();
+  const { data: settings } = await supabase
+    .from("site_settings")
+    .select("company_name, tagline, contact, seo")
+    .eq("id", "default")
+    .maybeSingle();
+
+  const contact = (settings?.contact ?? siteConfig.contact) as ContactSettings;
+  const seo = (settings?.seo ?? siteConfig.seo) as SeoSettings;
+  const companyName = settings?.company_name ?? siteConfig.companyName;
+  const tagline = settings?.tagline ?? siteConfig.tagline;
+  const businessHours = contact.businessHours ?? [...siteConfig.contact.businessHours];
 
   return (
     <AdminShell
       active="settings"
       title="ตั้งค่าเว็บ"
-      description="ข้อมูลบริษัท ช่องทางติดต่อ และสีธีมที่ต้องปรับได้เมื่อขายให้ลูกค้าหลายเจ้า"
+      description="ข้อมูลบริษัท ช่องทางติดต่อ และรายละเอียดหลักที่จะแสดงบนหน้าเว็บไซต์"
     >
-      <section className="admin-settings-grid">
-        <form className="admin-form-panel">
+      {params?.saved ? <p className="admin-form-status is-success">บันทึกข้อมูลตั้งค่าเว็บแล้ว</p> : null}
+      {params?.error === "save" ? <p className="admin-form-status is-error">บันทึกไม่สำเร็จ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง</p> : null}
+
+      <form className="admin-settings-grid" action={saveAdminSettings}>
+        <section className="admin-form-panel">
           <div className="admin-panel-head">
             <div>
               <p className="admin-eyebrow">Company</p>
@@ -37,26 +69,26 @@ export default function AdminSettingsPage() {
 
           <label>
             <span>ชื่อบริษัท</span>
-            <input defaultValue={siteConfig.companyName} />
+            <input name="companyName" defaultValue={companyName} />
           </label>
 
           <label>
             <span>คำโปรย</span>
-            <input defaultValue={siteConfig.tagline} />
+            <input name="tagline" defaultValue={tagline} />
           </label>
 
           <label>
             <span>คำอธิบาย SEO</span>
-            <textarea defaultValue={siteConfig.seo.description} rows={4} />
+            <textarea name="seoDescription" defaultValue={seo.description ?? siteConfig.seo.description} rows={4} />
           </label>
 
-          <button type="button" className="admin-primary-button">
+          <button type="submit" className="admin-primary-button">
             <Save size={16} strokeWidth={1.8} />
-            บันทึกฉบับร่าง
+            บันทึกการตั้งค่า
           </button>
-        </form>
+        </section>
 
-        <form className="admin-form-panel">
+        <section className="admin-form-panel">
           <div className="admin-panel-head">
             <div>
               <p className="admin-eyebrow">Contact</p>
@@ -67,15 +99,15 @@ export default function AdminSettingsPage() {
           <div className="admin-contact-preview">
             <span>
               <Phone size={17} strokeWidth={1.8} />
-              {siteConfig.contact.phone}
+              {contact.phone ?? siteConfig.contact.phone}
             </span>
             <span>
               <Mail size={17} strokeWidth={1.8} />
-              {siteConfig.contact.email}
+              {contact.email ?? siteConfig.contact.email}
             </span>
             <span>
               <MapPin size={17} strokeWidth={1.8} />
-              {siteConfig.contact.address}
+              {contact.address ?? siteConfig.contact.address}
             </span>
           </div>
 
@@ -84,7 +116,7 @@ export default function AdminSettingsPage() {
               <span>เบอร์โทร</span>
               <span className="admin-field-icon">
                 <Phone size={16} strokeWidth={1.8} />
-                <input defaultValue={siteConfig.contact.phone} />
+                <input name="phone" defaultValue={contact.phone ?? siteConfig.contact.phone} />
               </span>
             </label>
 
@@ -92,7 +124,7 @@ export default function AdminSettingsPage() {
               <span>อีเมล</span>
               <span className="admin-field-icon">
                 <Mail size={16} strokeWidth={1.8} />
-                <input defaultValue={siteConfig.contact.email} />
+                <input name="email" defaultValue={contact.email ?? siteConfig.contact.email} />
               </span>
             </label>
           </div>
@@ -101,7 +133,7 @@ export default function AdminSettingsPage() {
             <span>Line ID</span>
             <span className="admin-field-icon">
               <MessageCircle size={16} strokeWidth={1.8} />
-              <input defaultValue={siteConfig.contact.lineId} />
+              <input name="lineId" defaultValue={contact.lineId ?? siteConfig.contact.lineId} />
             </span>
           </label>
 
@@ -109,7 +141,7 @@ export default function AdminSettingsPage() {
             <span>Line URL</span>
             <span className="admin-field-icon">
               <ExternalLink size={16} strokeWidth={1.8} />
-              <input defaultValue={siteConfig.contact.lineUrl} />
+              <input name="lineUrl" defaultValue={contact.lineUrl ?? siteConfig.contact.lineUrl} />
             </span>
           </label>
 
@@ -118,13 +150,13 @@ export default function AdminSettingsPage() {
               <span>Facebook URL</span>
               <span className="admin-field-icon">
                 <Share2 size={16} strokeWidth={1.8} />
-                <input defaultValue={siteConfig.contact.facebook} />
+                <input name="facebook" defaultValue={contact.facebook ?? siteConfig.contact.facebook} />
               </span>
             </label>
 
             <label>
               <span>ชื่อที่แสดงบน Facebook</span>
-              <input defaultValue={siteConfig.contact.facebookLabel} />
+              <input name="facebookLabel" defaultValue={contact.facebookLabel ?? siteConfig.contact.facebookLabel} />
             </label>
           </div>
 
@@ -132,46 +164,24 @@ export default function AdminSettingsPage() {
             <span>ชื่อสำนักงาน</span>
             <span className="admin-field-icon">
               <Building2 size={16} strokeWidth={1.8} />
-              <input defaultValue={siteConfig.contact.officeTitle} />
+              <input name="officeTitle" defaultValue={contact.officeTitle ?? siteConfig.contact.officeTitle} />
             </span>
           </label>
 
           <label>
             <span>ที่อยู่สำนักงาน</span>
-            <textarea defaultValue={siteConfig.contact.address} rows={3} />
+            <textarea name="address" defaultValue={contact.address ?? siteConfig.contact.address} rows={3} />
           </label>
 
           <label>
             <span>วันทำการ</span>
             <span className="admin-field-icon align-start">
               <Clock size={16} strokeWidth={1.8} />
-              <textarea defaultValue={siteConfig.contact.businessHours.join("\n")} rows={3} />
+              <textarea name="businessHours" defaultValue={businessHours.join("\n")} rows={3} />
             </span>
           </label>
-        </form>
-
-        <form className="admin-form-panel admin-settings-wide">
-          <div className="admin-panel-head">
-            <div>
-              <p className="admin-eyebrow">Theme</p>
-              <h2>สีธีมเว็บ</h2>
-            </div>
-            <Palette size={22} strokeWidth={1.7} />
-          </div>
-
-          <div className="admin-theme-grid">
-            {themeFields.map((field) => (
-              <label className="admin-theme-field" key={field.key}>
-                <span>{field.label}</span>
-                <div className="admin-color-control">
-                  <input type="color" defaultValue={field.value} aria-label={`${field.label} color`} />
-                  <input defaultValue={field.value} aria-label={`${field.label} hex`} />
-                </div>
-              </label>
-            ))}
-          </div>
-        </form>
-      </section>
+        </section>
+      </form>
     </AdminShell>
   );
 }
