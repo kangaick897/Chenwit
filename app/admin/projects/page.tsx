@@ -3,17 +3,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { Edit3, Eye, Plus, Search, Tags, Trash2 } from "lucide-react";
 
+import { deleteProject } from "@/app/admin/actions";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { projectCategories, projectCategoryOptions, projects } from "@/data/projects";
+import { getAdminProjects, getProjectCategories } from "@/lib/projects";
 
 export const metadata: Metadata = {
   title: "Admin Projects",
   description: "จัดการผลงานและอัปเดตไซต์งาน",
 };
 
-const categoryLabelBySlug = new Map(projectCategories.map((category) => [category.slug, category.label]));
+type AdminProjectsPageProps = {
+  searchParams?: Promise<{ deleted?: string; error?: string }>;
+};
 
-export default function AdminProjectsPage() {
+export default async function AdminProjectsPage({ searchParams }: AdminProjectsPageProps) {
+  const [projects, projectCategoryOptions, query] = await Promise.all([
+    getAdminProjects(),
+    getProjectCategories(),
+    searchParams,
+  ]);
+  const categoryLabelBySlug = new Map(projectCategoryOptions.map((category) => [category.slug, category.label]));
+
   return (
     <AdminShell
       active="projects"
@@ -26,12 +36,15 @@ export default function AdminProjectsPage() {
           <input type="search" placeholder="ค้นหาผลงานหรือสถานที่" />
         </label>
         <div className="admin-toolbar-actions">
-          <button type="button" className="admin-primary-button">
+          <Link href="/admin/projects/new" className="admin-primary-button">
             <Plus size={16} strokeWidth={1.8} />
             เพิ่มผลงาน
-          </button>
+          </Link>
         </div>
       </section>
+
+      {query?.deleted === "1" ? <p className="admin-form-status is-success">ลบผลงานเรียบร้อยแล้ว</p> : null}
+      {query?.error === "delete" ? <p className="admin-form-status is-error">ลบผลงานไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
 
       <details className="admin-package-panel admin-collapsible-panel" aria-labelledby="admin-project-categories-title">
         <summary className="admin-collapsible-summary">
@@ -59,14 +72,6 @@ export default function AdminProjectsPage() {
                     <strong>{category.label}</strong>
                     <span>{count} ผลงาน</span>
                   </div>
-                  <div className="admin-row-actions">
-                    <button type="button" aria-label={`แก้ไขหมวด ${category.label}`}>
-                      <Edit3 size={16} strokeWidth={1.8} />
-                    </button>
-                    <button type="button" aria-label={`ลบหมวด ${category.label}`}>
-                      <Trash2 size={16} strokeWidth={1.8} />
-                    </button>
-                  </div>
                 </div>
               );
             })}
@@ -85,7 +90,7 @@ export default function AdminProjectsPage() {
           <article className="admin-table-row admin-project-table-row" key={project.slug}>
             <div className="admin-item-cell">
               <div className="admin-thumb">
-                <Image src={project.image} alt={project.title} fill sizes="96px" />
+                <Image src={project.coverImageUrl} alt={project.title} fill sizes="96px" />
               </div>
               <div>
                 <strong>{project.title}</strong>
@@ -105,12 +110,16 @@ export default function AdminProjectsPage() {
               <Link href={`/admin/projects/${project.slug}/edit`} aria-label={`แก้ไข ${project.title}`}>
                 <Edit3 size={16} strokeWidth={1.8} />
               </Link>
-              <button type="button" aria-label={`ลบ ${project.title}`}>
-                <Trash2 size={16} strokeWidth={1.8} />
-              </button>
+              <form action={deleteProject}>
+                <input type="hidden" name="id" value={project.id} />
+                <button type="submit" aria-label={`ลบ ${project.title}`}>
+                  <Trash2 size={16} strokeWidth={1.8} />
+                </button>
+              </form>
             </div>
           </article>
         ))}
+        {projects.length === 0 ? <div className="admin-empty-state">ยังไม่มีผลงานในระบบ</div> : null}
       </section>
     </AdminShell>
   );

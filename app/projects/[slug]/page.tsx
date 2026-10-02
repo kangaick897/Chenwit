@@ -6,19 +6,15 @@ import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
-import { projectCategories, projects } from "@/data/projects";
+import { getProjectBySlug, getProjectCategories } from "@/lib/projects";
 
 type ProjectDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return projects.map((project) => ({ slug: project.slug }));
-}
-
 export async function generateMetadata({ params }: ProjectDetailPageProps) {
   const { slug } = await params;
-  const project = projects.find((item) => item.slug === slug);
+  const project = await getProjectBySlug(slug);
 
   return {
     title: project ? `${project.title} | ผลงาน` : "ผลงาน",
@@ -28,7 +24,7 @@ export async function generateMetadata({ params }: ProjectDetailPageProps) {
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params;
-  const project = projects.find((item) => item.slug === slug);
+  const [project, projectCategories] = await Promise.all([getProjectBySlug(slug), getProjectCategories()]);
 
   if (!project) {
     notFound();
@@ -88,22 +84,24 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               </div>
             ) : null}
 
-            <section className="project-gallery-section">
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">GALLERY</p>
-                  <h2>ภาพเพิ่มเติม</h2>
-                </div>
-                <p>รวมภาพบรรยากาศหน้างานและรายละเอียดที่ช่วยให้เห็นขอบเขตผลงานชัดขึ้น</p>
-              </div>
-              <div className="project-gallery-grid">
-                {visibleGallery.map((image, index) => (
-                  <div className="project-gallery-item" key={`${image}-${index}`}>
-                    <Image src={image} alt={`${project.title} รูปที่ ${index + 1}`} fill sizes="(max-width: 760px) 100vw, 33vw" />
+            {visibleGallery.length > 0 ? (
+              <section className="project-gallery-section">
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">GALLERY</p>
+                    <h2>ภาพเพิ่มเติม</h2>
                   </div>
-                ))}
-              </div>
-            </section>
+                  <p>รวมภาพบรรยากาศหน้างานและรายละเอียดที่ช่วยให้เห็นขอบเขตผลงานชัดขึ้น</p>
+                </div>
+                <div className="project-gallery-grid">
+                  {visibleGallery.map((image, index) => (
+                    <div className="project-gallery-item" key={`${image}-${index}`}>
+                      <Image src={image} alt={`${project.title} รูปที่ ${index + 1}`} fill sizes="(max-width: 760px) 100vw, 33vw" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             <div className="project-detail-bottom">
               <Link className="text-link" href="/projects">

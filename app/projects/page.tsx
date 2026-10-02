@@ -5,7 +5,7 @@ import { ArrowUpRight, MapPin } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
-import { projectCategories, projects } from "@/data/projects";
+import { getProjectCategories, getPublishedProjects } from "@/lib/projects";
 
 const PROJECTS_PER_PAGE = 9;
 
@@ -38,7 +38,12 @@ function getProjectHref(category: string, page: number) {
 }
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
-  const params = await searchParams;
+  const [params, categories, projects] = await Promise.all([
+    searchParams,
+    getProjectCategories(),
+    getPublishedProjects(),
+  ]);
+  const projectCategories = [{ slug: "all", label: "ทั้งหมด" }, ...categories];
   const visibleCategories = projectCategories.filter(
     (category) => category.slug === "all" || category.showInFilter !== false,
   );

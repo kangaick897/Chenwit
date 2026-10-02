@@ -105,6 +105,92 @@ async function getUniqueHouseSlug(baseValue: string) {
   }
 }
 
+async function getUniqueProjectSlug(baseValue: string) {
+  const supabase = await createServerSupabaseClient();
+  const baseSlug = slugify(baseValue) || `project-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (true) {
+    const { data, error } = await supabase.from("projects").select("id").eq("slug", slug).maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+}
+
+async function saveProjectGalleryImages(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  projectId: string,
+  slug: string,
+  title: string,
+  formData: FormData,
+  pendingImageDeletes: string[],
+) {
+  const galleryImageUrls = getTextValues(formData, "galleryImageUrl");
+  const galleryImageUploads = formData.getAll("galleryImageUpload");
+  const originalProjectImageUrls = getTextValues(formData, "originalProjectImageUrl");
+  const galleryRows: Array<{
+    alt_text: string;
+    image_url: string;
+    project_id: string;
+    sort_order: number;
+  }> = [];
+
+  for (let index = 0; index < galleryImageUrls.length; index += 1) {
+    const upload = galleryImageUploads[index];
+    const currentImageUrl = galleryImageUrls[index] ?? "";
+    const nextImageUrl = isUploadableImage(upload)
+      ? await uploadAdminImage(supabase, upload, `projects/${slug}/gallery`, `image-${index + 1}`)
+      : currentImageUrl;
+
+    if (!nextImageUrl) {
+      continue;
+    }
+
+    if (nextImageUrl !== currentImageUrl && currentImageUrl) {
+      pendingImageDeletes.push(currentImageUrl);
+    }
+
+    galleryRows.push({
+      alt_text: `${title} รูปที่ ${index + 1}`,
+      image_url: nextImageUrl,
+      project_id: projectId,
+      sort_order: index + 1,
+    });
+  }
+
+  originalProjectImageUrls.forEach((imageUrl) => {
+    const stillUsed = galleryRows.some((row) => row.image_url === imageUrl);
+
+    if (imageUrl && !stillUsed) {
+      pendingImageDeletes.push(imageUrl);
+    }
+  });
+
+  const { error: deleteError } = await supabase.from("project_images").delete().eq("project_id", projectId);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  if (galleryRows.length > 0) {
+    const { error: insertError } = await supabase.from("project_images").insert(galleryRows);
+
+    if (insertError) {
+      throw new Error(insertError.message);
+    }
+  }
+}
+
 export async function saveAdminSettings(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   const businessHours = getTextValue(formData, "businessHours")
@@ -206,6 +292,204 @@ export async function createHouse(formData: FormData) {
   revalidatePath("/admin/dashboard");
 
   redirect(`/admin/houses/${slug}/edit?saved=1`);
+}
+
+export async function createProject(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const title = getTextValue(formData, "title");
+  const coverImageFile = formData.get("coverImageFile");
+
+  if (!title) {
+    redirect("/admin/projects/new?error=missing");
+  }
+
+  if (!isUploadableImage(coverImageFile)) {
+    redirect("/admin/projects/new?error=cover");
+  }
+
+  let slug = "";
+
+  try {
+    slug = await getUniqueProjectSlug(title);
+  } catch {
+    redirect("/admin/projects/new?error=save");
+  }
+
+  let coverImageUrl = "";
+
+  try {
+    coverImageUrl = await uploadAdminImage(supabase, coverImageFile, `projects/${slug}`, "cover");
+  } catch {
+    redirect("/admin/projects/new?error=upload");
+  }
+
+  const { data: project, error } = await supabase
+    .from("projects")
+    .insert({
+      slug,
+      title,
+      cover_image_url: coverImageUrl,
+      category_slug: getTextValue(formData, "category"),
+      location: getTextValue(formData, "location"),
+      status: getTextValue(formData, "status"),
+      year: getTextValue(formData, "year"),
+      area: getTextValue(formData, "area"),
+      scope: getTextValue(formData, "scope"),
+      description: getTextValue(formData, "description"),
+      show_details: formData.get("showDetails") === "on",
+      is_published: formData.get("isPublished") === "on",
+    })
+    .select("id")
+    .single();
+
+  if (error || !project) {
+    if (coverImageUrl) {
+      await removeAdminImages(supabase, [coverImageUrl]);
+    }
+
+    redirect("/admin/projects/new?error=save");
+  }
+
+  const pendingImageDeletes: string[] = [];
+
+  try {
+    await saveProjectGalleryImages(supabase, project.id, slug, title, formData, pendingImageDeletes);
+  } catch {
+    redirect(`/admin/projects/${slug}/edit?error=upload`);
+  }
+
+  await removeAdminImages(supabase, pendingImageDeletes);
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  revalidatePath("/admin/projects");
+  revalidatePath("/admin/dashboard");
+
+  redirect(`/admin/projects/${slug}/edit?saved=1`);
+}
+
+export async function saveProject(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const id = getTextValue(formData, "id");
+  const slug = getTextValue(formData, "slug");
+
+  if (!id || !slug) {
+    redirect("/admin/projects?error=save");
+  }
+
+  const pendingImageDeletes: string[] = [];
+  const coverImageFile = formData.get("coverImageFile");
+  const currentCoverImageUrl = getTextValue(formData, "coverImageUrl");
+  let coverImageUrl = currentCoverImageUrl;
+
+  try {
+    if (isUploadableImage(coverImageFile)) {
+      coverImageUrl = await uploadAdminImage(supabase, coverImageFile, `projects/${slug}`, "cover");
+
+      if (currentCoverImageUrl) {
+        pendingImageDeletes.push(currentCoverImageUrl);
+      }
+    }
+  } catch {
+    redirect(`/admin/projects/${slug}/edit?error=upload`);
+  }
+
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      title: getTextValue(formData, "title"),
+      cover_image_url: coverImageUrl,
+      category_slug: getTextValue(formData, "category"),
+      location: getTextValue(formData, "location"),
+      status: getTextValue(formData, "status"),
+      year: getTextValue(formData, "year"),
+      area: getTextValue(formData, "area"),
+      scope: getTextValue(formData, "scope"),
+      description: getTextValue(formData, "description"),
+      show_details: formData.get("showDetails") === "on",
+      is_published: formData.get("isPublished") === "on",
+    })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/admin/projects/${slug}/edit?error=save`);
+  }
+
+  try {
+    await saveProjectGalleryImages(
+      supabase,
+      id,
+      slug,
+      getTextValue(formData, "title"),
+      formData,
+      pendingImageDeletes,
+    );
+  } catch {
+    redirect(`/admin/projects/${slug}/edit?error=save`);
+  }
+
+  await removeAdminImages(supabase, pendingImageDeletes);
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  revalidatePath(`/projects/${slug}`);
+  revalidatePath("/admin/projects");
+  revalidatePath(`/admin/projects/${slug}/edit`);
+  revalidatePath("/admin/dashboard");
+
+  redirect(`/admin/projects/${slug}/edit?saved=1`);
+}
+
+export async function deleteProject(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const id = getTextValue(formData, "id");
+
+  if (!id) {
+    redirect("/admin/projects?error=delete");
+  }
+
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id,cover_image_url")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (projectError || !project) {
+    redirect("/admin/projects?error=delete");
+  }
+
+  const { data: images, error: imagesError } = await supabase
+    .from("project_images")
+    .select("image_url")
+    .eq("project_id", id);
+
+  if (imagesError) {
+    redirect("/admin/projects?error=delete");
+  }
+
+  const { error: deleteImagesError } = await supabase.from("project_images").delete().eq("project_id", id);
+
+  if (deleteImagesError) {
+    redirect("/admin/projects?error=delete");
+  }
+
+  const { error: deleteProjectError } = await supabase.from("projects").delete().eq("id", id);
+
+  if (deleteProjectError) {
+    redirect("/admin/projects?error=delete");
+  }
+
+  await removeAdminImages(supabase, [
+    project.cover_image_url,
+    ...(images ?? []).map((image) => image.image_url),
+  ].filter((imageUrl): imageUrl is string => Boolean(imageUrl)));
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  revalidatePath("/admin/projects");
+  revalidatePath("/admin/dashboard");
+
+  redirect("/admin/projects?deleted=1");
 }
 
 export async function saveHouse(formData: FormData) {

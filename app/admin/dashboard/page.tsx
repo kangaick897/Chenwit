@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { projects } from "@/data/projects";
 import { getAdminHouses } from "@/lib/admin-houses";
+import { getAdminProjects } from "@/lib/projects";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -26,7 +26,7 @@ const latestActivity = [
 ];
 
 export default async function AdminDashboardPage() {
-  const houses = await getAdminHouses();
+  const [houses, projects] = await Promise.all([getAdminHouses(), getAdminProjects()]);
   const completedProjects = projects.filter((project) => project.status === "ส่งมอบแล้ว").length;
 
   return (

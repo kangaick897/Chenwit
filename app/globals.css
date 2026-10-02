@@ -559,6 +559,10 @@
   gap: 8px;
 }
 
+.admin-row-actions form {
+  display: contents;
+}
+
 .admin-row-actions button,
 .admin-row-actions a,
 .admin-project-actions button {
