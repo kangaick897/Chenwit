@@ -229,6 +229,13 @@ export async function saveAdminSettings(formData: FormData) {
     redirect("/admin/settings?error=save");
   }
 
+  revalidatePath("/");
+  revalidatePath("/about");
+  revalidatePath("/contact");
+  revalidatePath("/houses");
+  revalidatePath("/projects");
+  revalidatePath("/admin/settings");
+
   redirect("/admin/settings?saved=1");
 }
 
@@ -533,6 +540,9 @@ export async function saveHouse(formData: FormData) {
       bedrooms: getNumberValue(formData, "bedrooms"),
       bathrooms: getNumberValue(formData, "bathrooms"),
       parking: getNumberValue(formData, "parking"),
+      is_featured: formData.get("isFeatured") === "on",
+      is_published: formData.get("isPublished") === "on",
+      sort_order: getNumberValue(formData, "sortOrder"),
     })
     .eq("id", id);
 
@@ -613,8 +623,61 @@ export async function saveHouse(formData: FormData) {
 
   revalidatePath("/admin/houses");
   revalidatePath(`/admin/houses/${slug}/edit`);
+  revalidatePath("/");
   revalidatePath("/houses");
   revalidatePath(`/houses/${slug}`);
 
   redirect(`/admin/houses/${slug}/edit?saved=1`);
+}
+
+export async function deleteHouse(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const id = getTextValue(formData, "id");
+
+  if (!id) {
+    redirect("/admin/houses?error=delete");
+  }
+
+  const { data: house, error: houseError } = await supabase
+    .from("houses")
+    .select("id,cover_image_url")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (houseError || !house) {
+    redirect("/admin/houses?error=delete");
+  }
+
+  const { data: floorPlans, error: floorPlansError } = await supabase
+    .from("house_floor_plans")
+    .select("image_url")
+    .eq("house_id", id);
+
+  if (floorPlansError) {
+    redirect("/admin/houses?error=delete");
+  }
+
+  const { error: deletePlansError } = await supabase.from("house_floor_plans").delete().eq("house_id", id);
+
+  if (deletePlansError) {
+    redirect("/admin/houses?error=delete");
+  }
+
+  const { error: deleteHouseError } = await supabase.from("houses").delete().eq("id", id);
+
+  if (deleteHouseError) {
+    redirect("/admin/houses?error=delete");
+  }
+
+  await removeAdminImages(supabase, [
+    house.cover_image_url,
+    ...(floorPlans ?? []).map((plan) => plan.image_url),
+  ].filter((imageUrl): imageUrl is string => Boolean(imageUrl)));
+
+  revalidatePath("/");
+  revalidatePath("/houses");
+  revalidatePath("/admin/houses");
+  revalidatePath("/admin/dashboard");
+
+  redirect("/admin/houses?deleted=1");
 }

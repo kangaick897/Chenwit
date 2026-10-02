@@ -210,12 +210,27 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
               <span>จำนวนชั้น</span>
               <input name="floorCount" type="number" min={1} inputMode="numeric" defaultValue={floorCount} />
             </label>
+            <label>
+              <span>ลำดับการแสดงผล</span>
+              <input name="sortOrder" type="number" inputMode="numeric" defaultValue={house.sortOrder} />
+            </label>
           </div>
 
           <label>
             <span>คำอธิบาย</span>
             <textarea name="description" defaultValue={house.description} rows={4} />
           </label>
+
+          <div className="admin-form-grid two-cols">
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isPublished" type="checkbox" defaultChecked={house.isPublished} />
+              <span>เผยแพร่บนหน้าบ้าน</span>
+            </label>
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isFeatured" type="checkbox" defaultChecked={house.isFeatured} />
+              <span>แสดงในหน้าแรก</span>
+            </label>
+          </div>
         </div>
       </section>
 

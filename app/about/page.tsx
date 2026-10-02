@@ -4,7 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
-import { siteConfig } from "@/config/site";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
   title: "เกี่ยวกับเรา",
@@ -44,14 +44,16 @@ const serviceSections = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const settings = await getPublicSiteSettings();
+
   return (
     <>
       <SiteHeader />
       <main className="page-main about-services-page">
         <section className="about-services-hero">
           <div className="container">
-            <p className="eyebrow">{siteConfig.companyName}</p>
+            <p className="eyebrow">{settings.companyName}</p>
             <h1>งานบริการของเรา</h1>
             <p>Our Services</p>
           </div>

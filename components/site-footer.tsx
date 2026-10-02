@@ -1,17 +1,20 @@
 import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const settings = await getPublicSiteSettings();
+
   return (
     <footer className="site-footer">
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <p className="footer-brand-name">{siteConfig.companyName}</p>
+            <p className="footer-brand-name">{settings.companyName}</p>
             <p className="footer-brand-subtitle">{siteConfig.brandSubtitle}</p>
             <p className="footer-copy">
-              {siteConfig.tagline}. ออกแบบและสร้างบ้านด้วยความใส่ใจในทุกรายละเอียด
+              {settings.tagline}. ออกแบบและสร้างบ้านด้วยความใส่ใจในทุกรายละเอียด
             </p>
           </div>
           <div>
@@ -27,14 +30,14 @@ export function SiteFooter() {
           <div>
             <p className="footer-title">Contact</p>
             <div className="footer-links">
-              <a href={`tel:${siteConfig.contact.phone}`}>{siteConfig.contact.phone}</a>
-              <a href={`mailto:${siteConfig.contact.email}`}>{siteConfig.contact.email}</a>
-              <span>{siteConfig.contact.address}</span>
+              <a href={`tel:${settings.contact.phone}`}>{settings.contact.phone}</a>
+              <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
+              <span>{settings.contact.address}</span>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} {siteConfig.companyName}</span>
+          <span>© {new Date().getFullYear()} {settings.companyName}</span>
           <span>House Design / Construction</span>
         </div>
       </div>

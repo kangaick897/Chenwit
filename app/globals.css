@@ -594,6 +594,13 @@
   text-align: center;
 }
 
+.admin-list-result {
+  margin: -4px 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
 .admin-detail-actions {
   display: flex;
   flex-wrap: wrap;

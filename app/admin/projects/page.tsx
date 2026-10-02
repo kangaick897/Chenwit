@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Edit3, Eye, Plus, Search, Tags, Trash2 } from "lucide-react";
 
+import { ConfirmDeleteButton } from "@/app/admin/_components/confirm-delete-button";
 import { deleteProject } from "@/app/admin/actions";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { getAdminProjects, getProjectCategories } from "@/lib/projects";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 type AdminProjectsPageProps = {
-  searchParams?: Promise<{ deleted?: string; error?: string }>;
+  searchParams?: Promise<{ deleted?: string; error?: string; q?: string }>;
 };
 
 export default async function AdminProjectsPage({ searchParams }: AdminProjectsPageProps) {
@@ -22,6 +23,15 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
     getProjectCategories(),
     searchParams,
   ]);
+  const searchQuery = (query?.q ?? "").trim().toLowerCase();
+  const visibleProjects = searchQuery
+    ? projects.filter((project) =>
+        [project.title, project.location, project.status, project.area, project.scope]
+          .join(" ")
+          .toLowerCase()
+          .includes(searchQuery),
+      )
+    : projects;
   const categoryLabelBySlug = new Map(projectCategoryOptions.map((category) => [category.slug, category.label]));
 
   return (
@@ -31,10 +41,10 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
       description="รวมผลงานก่อสร้าง ต่อเติม รีโนเวท และไซต์งานที่จะแสดงบนหน้าเว็บไซต์"
     >
       <section className="admin-toolbar" aria-label="เครื่องมือจัดการผลงาน">
-        <label className="admin-search">
+        <form className="admin-search" action="/admin/projects">
           <Search size={17} strokeWidth={1.8} />
-          <input type="search" placeholder="ค้นหาผลงานหรือสถานที่" />
-        </label>
+          <input name="q" type="search" placeholder="ค้นหาผลงานหรือสถานที่" defaultValue={query?.q ?? ""} />
+        </form>
         <div className="admin-toolbar-actions">
           <Link href="/admin/projects/new" className="admin-primary-button">
             <Plus size={16} strokeWidth={1.8} />
@@ -45,6 +55,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
 
       {query?.deleted === "1" ? <p className="admin-form-status is-success">ลบผลงานเรียบร้อยแล้ว</p> : null}
       {query?.error === "delete" ? <p className="admin-form-status is-error">ลบผลงานไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
+      {searchQuery ? <p className="admin-list-result">พบ {visibleProjects.length} รายการจากคำค้น “{query?.q}”</p> : null}
 
       <details className="admin-package-panel admin-collapsible-panel" aria-labelledby="admin-project-categories-title">
         <summary className="admin-collapsible-summary">
@@ -56,11 +67,6 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
         </summary>
 
         <div className="admin-collapsible-body">
-          <button type="button" className="admin-secondary-button">
-            <Plus size={16} strokeWidth={1.8} />
-            เพิ่มหมวดหมู่
-          </button>
-
           <div className="admin-category-list">
             {projectCategoryOptions.map((category) => {
               const count = projects.filter((project) => project.category === category.slug).length;
@@ -86,7 +92,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
           <span>จัดการ</span>
         </div>
 
-        {projects.map((project) => (
+        {visibleProjects.map((project) => (
           <article className="admin-table-row admin-project-table-row" key={project.slug}>
             <div className="admin-item-cell">
               <div className="admin-thumb">
@@ -112,14 +118,17 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
               </Link>
               <form action={deleteProject}>
                 <input type="hidden" name="id" value={project.id} />
-                <button type="submit" aria-label={`ลบ ${project.title}`}>
+                <ConfirmDeleteButton
+                  label={`ลบ ${project.title}`}
+                  message={`ลบผลงาน "${project.title}" และรูปที่เกี่ยวข้องทั้งหมดใช่ไหม?`}
+                >
                   <Trash2 size={16} strokeWidth={1.8} />
-                </button>
+                </ConfirmDeleteButton>
               </form>
             </div>
           </article>
         ))}
-        {projects.length === 0 ? <div className="admin-empty-state">ยังไม่มีผลงานในระบบ</div> : null}
+        {visibleProjects.length === 0 ? <div className="admin-empty-state">ยังไม่มีผลงานในระบบ</div> : null}
       </section>
     </AdminShell>
   );

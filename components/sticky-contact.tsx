@@ -1,15 +1,17 @@
 import { Mail, MessageCircle, Phone } from "lucide-react";
 
-import { siteConfig } from "@/config/site";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
-export function StickyContact() {
+export async function StickyContact() {
+  const { contact } = await getPublicSiteSettings();
+
   return (
     <div className="sticky-contact" aria-label="ช่องทางติดต่อด่วน">
-      <a href={`tel:${siteConfig.contact.phone}`} aria-label="โทรหาเรา" title="โทรหาเรา">
+      <a href={`tel:${contact.phone}`} aria-label="โทรหาเรา" title="โทรหาเรา">
         <Phone size={18} strokeWidth={1.5} />
       </a>
       <a
-        href={siteConfig.contact.lineUrl}
+        href={contact.lineUrl}
         target="_blank"
         rel="noreferrer"
         aria-label="ติดต่อผ่าน Line"
@@ -17,7 +19,7 @@ export function StickyContact() {
       >
         <MessageCircle size={18} strokeWidth={1.5} />
       </a>
-      <a href={`mailto:${siteConfig.contact.email}`} aria-label="ส่งอีเมล" title="ส่งอีเมล">
+      <a href={`mailto:${contact.email}`} aria-label="ส่งอีเมล" title="ส่งอีเมล">
         <Mail size={18} strokeWidth={1.5} />
       </a>
     </div>

@@ -10,6 +10,7 @@ type HouseRow = {
   floors: string | null;
   house_size: string | null;
   id: string;
+  is_featured: boolean | null;
   land_size: string | null;
   location: string | null;
   name: string;
@@ -26,7 +27,7 @@ type FloorPlanRow = {
 };
 
 const houseFields =
-  "id,slug,code,name,cover_image_url,style,location,starting_price,floors,usable_area,house_size,land_size,description,bedrooms,bathrooms,parking";
+  "id,slug,code,name,cover_image_url,style,location,starting_price,floors,usable_area,house_size,land_size,description,bedrooms,bathrooms,parking,is_featured";
 
 function mapHouse(row: HouseRow, floorPlans: FloorPlanRow[] = []): House {
   return {
@@ -71,7 +72,21 @@ export async function getPublishedHouses() {
 }
 
 export async function getFeaturedHouses(limit = 4) {
-  const houses = await getPublishedHouses();
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("houses")
+    .select(houseFields)
+    .eq("is_published", true)
+    .eq("is_featured", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const houses = (data ?? []).map((row) => mapHouse(row as HouseRow));
 
   return houses.slice(0, limit);
 }

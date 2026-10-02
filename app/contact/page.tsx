@@ -3,21 +3,24 @@ import { Building2, Clock, Mail, MessageCircle, Phone, Share2 } from "lucide-rea
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
-import { siteConfig } from "@/config/site";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
   title: "ติดต่อเรา",
   description: "ติดต่อทีมออกแบบและสร้างบ้านเพื่อเริ่มต้นพูดคุย",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getPublicSiteSettings();
+  const { contact } = settings;
+
   return (
     <>
       <SiteHeader />
       <main className="page-main">
         <section className="page-hero contact-hero">
           <div className="container">
-            <p className="eyebrow">{siteConfig.companyName}</p>
+            <p className="eyebrow">{settings.companyName}</p>
             <h1>เรายินดีให้คำปรึกษา ติดต่อสอบถามเรา</h1>
             <p>Contact us</p>
           </div>
@@ -28,17 +31,17 @@ export default function ContactPage() {
             <div className="contact-office">
               <div>
                 <Building2 size={26} strokeWidth={1.5} />
-                <h2>{siteConfig.contact.officeTitle}</h2>
-                <p>{siteConfig.contact.address}</p>
+                <h2>{contact.officeTitle}</h2>
+                <p>{contact.address}</p>
               </div>
               <div>
                 <Clock size={26} strokeWidth={1.5} />
                 <h2>วันทำการ</h2>
                 <p>
-                  {siteConfig.contact.businessHours.map((line, index) => (
+                  {contact.businessHours.map((line, index) => (
                     <span key={line}>
                       {line}
-                      {index < siteConfig.contact.businessHours.length - 1 ? <br /> : null}
+                      {index < contact.businessHours.length - 1 ? <br /> : null}
                     </span>
                   ))}
                 </p>
@@ -50,15 +53,15 @@ export default function ContactPage() {
                 <Phone size={21} strokeWidth={1.4} />
                 <div>
                   <strong>โทร:</strong>
-                  <a href={`tel:${siteConfig.contact.phone}`}>{siteConfig.contact.phone}</a>
+                  <a href={`tel:${contact.phone}`}>{contact.phone}</a>
                 </div>
               </div>
               <div className="contact-item">
                 <MessageCircle size={21} strokeWidth={1.4} />
                 <div>
                   <strong>Line:</strong>
-                  <a href={siteConfig.contact.lineUrl} target="_blank" rel="noreferrer">
-                    {siteConfig.contact.lineId}
+                  <a href={contact.lineUrl} target="_blank" rel="noreferrer">
+                    {contact.lineId}
                   </a>
                 </div>
               </div>
@@ -66,15 +69,15 @@ export default function ContactPage() {
                 <Mail size={21} strokeWidth={1.4} />
                 <div>
                   <strong>อีเมล:</strong>
-                  <a href={`mailto:${siteConfig.contact.email}`}>{siteConfig.contact.email}</a>
+                  <a href={`mailto:${contact.email}`}>{contact.email}</a>
                 </div>
               </div>
               <div className="contact-item">
                 <Share2 size={21} strokeWidth={1.4} />
                 <div>
                   <strong>Facebook:</strong>
-                  <a href={siteConfig.contact.facebook} target="_blank" rel="noreferrer">
-                    {siteConfig.contact.facebookLabel}
+                  <a href={contact.facebook} target="_blank" rel="noreferrer">
+                    {contact.facebookLabel}
                   </a>
                 </div>
               </div>
