@@ -8,19 +8,15 @@ import { HouseCard } from "@/components/house-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
-import { houses } from "@/data/houses";
+import { getPublishedHouseBySlug, getPublishedHouses } from "@/lib/public-houses";
 
 type HouseDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return houses.map((house) => ({ slug: house.slug }));
-}
-
 export async function generateMetadata({ params }: HouseDetailPageProps) {
   const { slug } = await params;
-  const house = houses.find((item) => item.slug === slug);
+  const house = await getPublishedHouseBySlug(slug);
 
   return {
     title: house?.name ?? "แบบบ้าน",
@@ -30,7 +26,7 @@ export async function generateMetadata({ params }: HouseDetailPageProps) {
 
 export default async function HouseDetailPage({ params }: HouseDetailPageProps) {
   const { slug } = await params;
-  const house = houses.find((item) => item.slug === slug);
+  const [house, houses] = await Promise.all([getPublishedHouseBySlug(slug), getPublishedHouses()]);
 
   if (!house) {
     notFound();

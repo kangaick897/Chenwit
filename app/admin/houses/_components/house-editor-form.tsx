@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type ChangeEvent } from "react";
+import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 import {
   Bath,
   BedDouble,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { saveHouse } from "@/app/admin/actions";
+import { compressImageFile } from "@/lib/client-image-compression";
 import type { AdminHouse } from "@/lib/admin-houses";
 
 type HouseEditorFormProps = {
@@ -30,11 +31,17 @@ type EditableFloorPlan = {
   persistedImage: string | null;
   previewUrl: string | null;
   title: string;
+  uploadFile: File | null;
 };
 
 export function HouseEditorForm({ house }: HouseEditorFormProps) {
   const floorPlans = house.floorPlans ?? [];
   const floorCount = Number.parseInt(house.floors, 10) || floorPlans.length || 1;
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isPreparingImages, setIsPreparingImages] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [editableFloorPlans, setEditableFloorPlans] = useState<EditableFloorPlan[]>(() =>
     floorPlans.map((plan, index) => ({
       fileName: null,
@@ -43,6 +50,7 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
       persistedImage: plan.imageUrl,
       previewUrl: null,
       title: plan.title,
+      uploadFile: null,
     })),
   );
 
@@ -56,6 +64,7 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
         persistedImage: null,
         previewUrl: null,
         title: `แปลนใหม่ ${plans.length + 1}`,
+        uploadFile: null,
       },
     ]);
   };
@@ -68,6 +77,21 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
 
   const removeFloorPlan = (id: string) => {
     setEditableFloorPlans((plans) => plans.filter((plan) => plan.id !== id));
+  };
+
+  const updateCoverImage = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCoverFile(file);
+      setCoverPreviewUrl(typeof reader.result === "string" ? reader.result : null);
+    };
+    reader.readAsDataURL(file);
   };
 
   const updateFloorPlanImage = (id: string, event: ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +110,7 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
                 ...plan,
                 fileName: file.name,
                 previewUrl: typeof reader.result === "string" ? reader.result : null,
+                uploadFile: file,
               }
             : plan,
         ),
@@ -94,11 +119,52 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
     reader.readAsDataURL(file);
   };
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setUploadError(null);
+    setIsPreparingImages(true);
+
+    const formData = new FormData(event.currentTarget);
+
+    void (async () => {
+      formData.delete("coverImageFile");
+      formData.delete("floorPlanUpload");
+
+      if (coverFile) {
+        const compressedCover = await compressImageFile(coverFile, { maxSize: 1600, quality: 0.84 });
+        formData.append("coverImageFile", compressedCover);
+      }
+
+      for (const plan of editableFloorPlans) {
+        if (plan.uploadFile) {
+          const compressedFloorPlan = await compressImageFile(plan.uploadFile, { maxSize: 2000, quality: 0.86 });
+          formData.append("floorPlanUpload", compressedFloorPlan);
+        } else {
+          formData.append("floorPlanUpload", "");
+        }
+      }
+
+      setIsPreparingImages(false);
+      startTransition(() => {
+        void saveHouse(formData);
+      });
+    })().catch(() => {
+      setIsPreparingImages(false);
+      setUploadError("เตรียมรูปภาพไม่สำเร็จ กรุณาลองเลือกรูปใหม่อีกครั้ง");
+    });
+  };
+
+  const isSaving = isPreparingImages || isPending;
+  const coverImageSrc = coverPreviewUrl ?? house.coverImageUrl;
+
   return (
-    <form action={saveHouse} className="admin-house-edit-form">
+    <form onSubmit={handleSubmit} className="admin-house-edit-form">
       <input type="hidden" name="id" value={house.id} />
       <input type="hidden" name="slug" value={house.slug} />
       <input type="hidden" name="coverImageUrl" value={house.coverImageUrl} />
+      {floorPlans.map((plan) => (
+        <input key={plan.id} type="hidden" name="originalFloorPlanImageUrl" value={plan.imageUrl} />
+      ))}
 
       <section className="admin-house-editor" aria-labelledby="admin-house-editor-title">
         <div className="admin-form-panel admin-house-main-form">
@@ -112,12 +178,18 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
 
           <div className="admin-house-cover-row">
             <div className="admin-house-cover">
-              <Image src={house.coverImageUrl} alt={house.name} fill sizes="260px" />
+              <Image
+                src={coverImageSrc}
+                alt={house.name}
+                fill
+                sizes="260px"
+                unoptimized={Boolean(coverPreviewUrl)}
+              />
             </div>
             <label className="admin-upload-dropzone">
               <Upload size={18} strokeWidth={1.8} />
-              <span>เปลี่ยนรูปหน้าปก</span>
-              <input type="file" accept="image/*" />
+              <span>{coverFile ? coverFile.name : "เปลี่ยนรูปหน้าปก"}</span>
+              <input name="coverImageFile" type="file" accept="image/*" onChange={updateCoverImage} />
             </label>
           </div>
 
@@ -259,12 +331,13 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
           <p className="admin-eyebrow">Save Changes</p>
           <h2>บันทึกข้อมูลแบบบ้านทั้งหมด</h2>
           <p>
-            ปุ่มนี้ใช้บันทึกข้อมูลหลัก รูปแปลน และแพ็กเกจทั้งหมดหลังแก้ครบแล้ว
+            ระบบจะบีบรูปเป็น WebP ก่อนอัปโหลด แล้วค่อยบันทึกข้อมูลหลัก รูปแปลน และแพ็กเกจทั้งหมด
           </p>
+          {uploadError ? <p className="admin-inline-error">{uploadError}</p> : null}
         </div>
-        <button type="submit" className="admin-primary-button">
+        <button type="submit" className="admin-primary-button" disabled={isSaving}>
           <Save size={16} strokeWidth={1.8} />
-          บันทึกการแก้ไขทั้งหมด
+          {isSaving ? "กำลังบันทึก..." : "บันทึกการแก้ไขทั้งหมด"}
         </button>
       </section>
     </form>

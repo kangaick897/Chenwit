@@ -55,6 +55,7 @@ export default async function AdminHouseEditPage({ params, searchParams }: Admin
       </div>
 
       {query?.saved === "1" ? <p className="admin-form-status is-success">บันทึกแบบบ้านเรียบร้อยแล้ว</p> : null}
+      {query?.error === "upload" ? <p className="admin-form-status is-error">อัปโหลดรูปไม่สำเร็จ กรุณาตรวจสอบ bucket และลองใหม่อีกครั้ง</p> : null}
       {query?.error === "save" ? <p className="admin-form-status is-error">บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
       <HouseEditorForm house={house} />
     </AdminShell>

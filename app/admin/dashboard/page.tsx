@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { houses } from "@/data/houses";
 import { projects } from "@/data/projects";
+import { getAdminHouses } from "@/lib/admin-houses";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -20,12 +20,13 @@ export const metadata: Metadata = {
 };
 
 const latestActivity = [
-  "เตรียมข้อมูลแบบบ้านสำหรับเชื่อม Supabase",
-  "รูปภาพหน้าแรกพร้อมย้ายไป Storage",
-  "หน้าติดต่อพร้อมเพิ่มข้อมูลสำนักงานและวันทำการ",
+  "แบบบ้านและผลงานตัวอย่างถูกเคลียร์ออกแล้ว",
+  "ระบบรูปแบบบ้านอัปโหลดเข้า Supabase Storage ได้แล้ว",
+  "หน้าบ้านอ่านแบบบ้านจาก Supabase แล้ว",
 ];
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const houses = await getAdminHouses();
   const completedProjects = projects.filter((project) => project.status === "ส่งมอบแล้ว").length;
 
   return (
@@ -53,7 +54,7 @@ export default function AdminDashboardPage() {
         <div className="admin-stat-card">
           <ImageIcon size={22} strokeWidth={1.8} />
           <span>พื้นที่รูปภาพ</span>
-          <strong>Mock</strong>
+          <strong>Storage</strong>
         </div>
       </section>
 

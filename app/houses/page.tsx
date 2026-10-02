@@ -2,14 +2,16 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { HouseFilterView } from "@/components/house-filter-view";
 import { StickyContact } from "@/components/sticky-contact";
-import { houses } from "@/data/houses";
+import { getPublishedHouses } from "@/lib/public-houses";
 
 export const metadata = {
   title: "แบบบ้าน",
   description: "เลือกชมแบบบ้านและแนวคิดการออกแบบสำหรับบ้านของคุณ",
 };
 
-export default function HousesPage() {
+export default async function HousesPage() {
+  const houses = await getPublishedHouses();
+
   return (
     <>
       <SiteHeader />

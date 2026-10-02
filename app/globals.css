@@ -187,6 +187,13 @@
   color: #8f3f2c;
 }
 
+.admin-inline-error {
+  margin: 8px 0 0;
+  color: #8f3f2c;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .admin-shell {
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr);
@@ -3672,13 +3679,14 @@ h2 {
 
 .about-service-row {
   display: grid;
-  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(0, 720px);
   align-items: center;
+  justify-content: center;
   gap: 72px;
 }
 
 .about-service-row-copy {
-  max-width: 360px;
+  max-width: 720px;
 }
 
 .about-service-row-copy h2 {
@@ -3903,7 +3911,8 @@ h2 {
   }
 
   .about-service-row {
-    grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+    grid-template-columns: minmax(0, 720px);
+    justify-content: center;
     gap: 44px;
   }
 

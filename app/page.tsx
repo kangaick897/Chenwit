@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
 import { siteConfig } from "@/config/site";
-import { featuredHouses } from "@/data/houses";
+import { getFeaturedHouses } from "@/lib/public-houses";
 
 const principles = [
   {
@@ -27,7 +27,9 @@ const principles = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const featuredHouses = await getFeaturedHouses();
+
   return (
     <>
       <SiteHeader />
@@ -45,36 +47,38 @@ export default function Home() {
           <h1 className="visually-hidden">CHENWIT HOUSE BUILDER รับออกแบบและสร้างบ้าน</h1>
         </section>
 
-        <section className="section section-houses" aria-labelledby="houses-title">
-          <div className="container">
-            <div className="section-heading-row">
-              <div>
-                <p className="eyebrow">OUR HOUSE COLLECTION</p>
-                <h2 id="houses-title">
-                  แบบบ้านยอดนิยม
-                  <br />
-                  ที่ใช่สำหรับครอบครัว
-                </h2>
+        {featuredHouses.length > 0 ? (
+          <section className="section section-houses" aria-labelledby="houses-title">
+            <div className="container">
+              <div className="section-heading-row">
+                <div>
+                  <p className="eyebrow">OUR HOUSE COLLECTION</p>
+                  <h2 id="houses-title">
+                    แบบบ้านยอดนิยม
+                    <br />
+                    ที่ใช่สำหรับครอบครัว
+                  </h2>
+                </div>
+                <div className="section-intro">
+                  <p>
+                    ดีไซน์สวย ฟังก์ชันครบ ตอบโจทย์ทุกครอบครัว
+                    พร้อมปรับรายละเอียดให้เหมาะกับพื้นที่ของคุณ
+                  </p>
+                  <Link className="text-link" href="/houses">
+                    ดูแบบบ้านทั้งหมด
+                    <ArrowRight size={16} strokeWidth={1.5} />
+                  </Link>
+                </div>
               </div>
-              <div className="section-intro">
-                <p>
-                  ดีไซน์สวย ฟังก์ชันครบ ตอบโจทย์ทุกครอบครัว
-                  พร้อมปรับรายละเอียดให้เหมาะกับพื้นที่ของคุณ
-                </p>
-                <Link className="text-link" href="/houses">
-                  ดูแบบบ้านทั้งหมด
-                  <ArrowRight size={16} strokeWidth={1.5} />
-                </Link>
-              </div>
-            </div>
 
-            <div className="house-grid">
-              {featuredHouses.map((house) => (
-                <HouseCard key={house.slug} house={house} />
-              ))}
+              <div className="house-grid">
+                {featuredHouses.map((house) => (
+                  <HouseCard key={house.slug} house={house} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         <section className="section section-principles" aria-labelledby="principles-title">
           <div className="container principles-grid">

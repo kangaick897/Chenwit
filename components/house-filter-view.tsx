@@ -38,8 +38,10 @@ export function HouseFilterView({ houses }: { houses: House[] }) {
   const pricedHouses = houses
     .map((house) => parseNumber(house.startingPrice))
     .filter((price): price is number => price !== null);
-  const budgetMin = Math.floor(Math.min(...pricedHouses) / priceStep) * priceStep;
-  const budgetMax = Math.ceil(Math.max(...pricedHouses) / priceStep) * priceStep;
+  const budgetMin =
+    pricedHouses.length > 0 ? Math.floor(Math.min(...pricedHouses) / priceStep) * priceStep : 0;
+  const budgetMax =
+    pricedHouses.length > 0 ? Math.ceil(Math.max(...pricedHouses) / priceStep) * priceStep : priceStep;
 
   const [query, setQuery] = useState("");
   const [minPrice, setMinPrice] = useState(budgetMin);
@@ -84,8 +86,8 @@ export function HouseFilterView({ houses }: { houses: House[] }) {
   ].filter(Boolean);
 
   const rangeStyle = {
-    "--range-start": `${((minPrice - budgetMin) / (budgetMax - budgetMin)) * 100}%`,
-    "--range-end": `${((maxPrice - budgetMin) / (budgetMax - budgetMin)) * 100}%`,
+    "--range-start": `${budgetMax > budgetMin ? ((minPrice - budgetMin) / (budgetMax - budgetMin)) * 100 : 0}%`,
+    "--range-end": `${budgetMax > budgetMin ? ((maxPrice - budgetMin) / (budgetMax - budgetMin)) * 100 : 100}%`,
   } as CSSProperties;
 
   const resetFilters = () => {
@@ -237,6 +239,15 @@ export function HouseFilterView({ houses }: { houses: House[] }) {
 
   return (
     <>
+      {houses.length === 0 ? (
+        <div className="house-empty">
+          <h3>ยังไม่มีแบบบ้านในระบบ</h3>
+          <p>เพิ่มแบบบ้านจากหลังบ้าน แล้วรายการจะแสดงบนหน้านี้อัตโนมัติ</p>
+        </div>
+      ) : null}
+
+      {houses.length > 0 ? (
+        <>
       <div className="mobile-filter-panel">
         <div className="mobile-filter-title">
           <h2>เลือกแบบบ้าน</h2>
@@ -326,6 +337,8 @@ export function HouseFilterView({ houses }: { houses: House[] }) {
           )}
         </div>
       </div>
+        </>
+      ) : null}
     </>
   );
 }
