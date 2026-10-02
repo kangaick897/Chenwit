@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Edit3, Eye, Plus, Search, Tags, Trash2 } from "lucide-react";
 
 import { ConfirmDeleteButton } from "@/app/admin/_components/confirm-delete-button";
-import { deleteProject } from "@/app/admin/actions";
+import { createProjectCategory, deleteProject, deleteProjectCategory } from "@/app/admin/actions";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { getAdminProjects, getProjectCategories } from "@/lib/projects";
 
@@ -14,7 +14,13 @@ export const metadata: Metadata = {
 };
 
 type AdminProjectsPageProps = {
-  searchParams?: Promise<{ deleted?: string; error?: string; q?: string }>;
+  searchParams?: Promise<{
+    categoryAdded?: string;
+    categoryDeleted?: string;
+    deleted?: string;
+    error?: string;
+    q?: string;
+  }>;
 };
 
 export default async function AdminProjectsPage({ searchParams }: AdminProjectsPageProps) {
@@ -54,7 +60,15 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
       </section>
 
       {query?.deleted === "1" ? <p className="admin-form-status is-success">ลบผลงานเรียบร้อยแล้ว</p> : null}
+      {query?.categoryAdded === "1" ? <p className="admin-form-status is-success">เพิ่มหมวดหมู่เรียบร้อยแล้ว</p> : null}
+      {query?.categoryDeleted === "1" ? <p className="admin-form-status is-success">ลบหมวดหมู่เรียบร้อยแล้ว</p> : null}
       {query?.error === "delete" ? <p className="admin-form-status is-error">ลบผลงานไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
+      {query?.error === "category-missing" ? <p className="admin-form-status is-error">กรุณากรอกชื่อหมวดหมู่</p> : null}
+      {query?.error === "category-save" ? <p className="admin-form-status is-error">เพิ่มหมวดหมู่ไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
+      {query?.error === "category-delete" ? <p className="admin-form-status is-error">ลบหมวดหมู่ไม่สำเร็จ กรุณาลองอีกครั้ง</p> : null}
+      {query?.error === "category-in-use" ? (
+        <p className="admin-form-status is-error">หมวดหมู่นี้ยังมีผลงานใช้อยู่ ต้องย้ายหรือลบผลงานออกก่อน</p>
+      ) : null}
       {searchQuery ? <p className="admin-list-result">พบ {visibleProjects.length} รายการจากคำค้น “{query?.q}”</p> : null}
 
       <details className="admin-package-panel admin-collapsible-panel" aria-labelledby="admin-project-categories-title">
@@ -67,6 +81,17 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
         </summary>
 
         <div className="admin-collapsible-body">
+          <form className="admin-category-create-form" action={createProjectCategory}>
+            <label>
+              <span>ชื่อหมวดหมู่ใหม่</span>
+              <input name="label" placeholder="เช่น งานออกแบบภายใน" required />
+            </label>
+            <button type="submit" className="admin-secondary-button">
+              <Plus size={16} strokeWidth={1.8} />
+              เพิ่มหมวดหมู่
+            </button>
+          </form>
+
           <div className="admin-category-list">
             {projectCategoryOptions.map((category) => {
               const count = projects.filter((project) => project.category === category.slug).length;
@@ -77,6 +102,17 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
                     <Tags size={17} strokeWidth={1.8} />
                     <strong>{category.label}</strong>
                     <span>{count} ผลงาน</span>
+                  </div>
+                  <div className="admin-row-actions">
+                    <form action={deleteProjectCategory}>
+                      <input type="hidden" name="slug" value={category.slug} />
+                      <ConfirmDeleteButton
+                        label={`ลบหมวด ${category.label}`}
+                        message={`ลบหมวด "${category.label}" ใช่ไหม? ลบได้เฉพาะหมวดที่ยังไม่มีผลงานใช้งาน`}
+                      >
+                        <Trash2 size={16} strokeWidth={1.8} />
+                      </ConfirmDeleteButton>
+                    </form>
                   </div>
                 </div>
               );

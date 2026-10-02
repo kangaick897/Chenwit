@@ -127,6 +127,28 @@ async function getUniqueProjectSlug(baseValue: string) {
   }
 }
 
+async function getUniqueProjectCategorySlug(baseValue: string) {
+  const supabase = await createServerSupabaseClient();
+  const baseSlug = slugify(baseValue) || `category-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (true) {
+    const { data, error } = await supabase.from("project_categories").select("slug").eq("slug", slug).maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+}
+
 async function saveProjectGalleryImages(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
   projectId: string,
@@ -189,6 +211,83 @@ async function saveProjectGalleryImages(
       throw new Error(insertError.message);
     }
   }
+}
+
+export async function createProjectCategory(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const label = getTextValue(formData, "label");
+
+  if (!label) {
+    redirect("/admin/projects?error=category-missing");
+  }
+
+  let slug = "";
+
+  try {
+    slug = await getUniqueProjectCategorySlug(label);
+  } catch {
+    redirect("/admin/projects?error=category-save");
+  }
+
+  const { data: maxSortRow } = await supabase
+    .from("project_categories")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const nextSortOrder =
+    typeof maxSortRow?.sort_order === "number" ? maxSortRow.sort_order + 1 : 1;
+
+  const { error } = await supabase.from("project_categories").insert({
+    slug,
+    label,
+    show_in_filter: true,
+    is_active: true,
+    sort_order: nextSortOrder,
+  });
+
+  if (error) {
+    redirect("/admin/projects?error=category-save");
+  }
+
+  revalidatePath("/projects");
+  revalidatePath("/admin/projects");
+
+  redirect("/admin/projects?categoryAdded=1");
+}
+
+export async function deleteProjectCategory(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const slug = getTextValue(formData, "slug");
+
+  if (!slug) {
+    redirect("/admin/projects?error=category-delete");
+  }
+
+  const { count, error: countError } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("category_slug", slug);
+
+  if (countError) {
+    redirect("/admin/projects?error=category-delete");
+  }
+
+  if ((count ?? 0) > 0) {
+    redirect("/admin/projects?error=category-in-use");
+  }
+
+  const { error } = await supabase.from("project_categories").delete().eq("slug", slug);
+
+  if (error) {
+    redirect("/admin/projects?error=category-delete");
+  }
+
+  revalidatePath("/projects");
+  revalidatePath("/admin/projects");
+
+  redirect("/admin/projects?categoryDeleted=1");
 }
 
 export async function saveAdminSettings(formData: FormData) {
