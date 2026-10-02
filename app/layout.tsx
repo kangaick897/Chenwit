@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { Noto_Sans_Thai, Poppins } from "next/font/google";
 import "./globals.css";
 
@@ -32,13 +33,23 @@ export const metadata: Metadata = {
   },
 };
 
+const themeStyle = {
+  "--navy": siteConfig.theme.navy,
+  "--gold": siteConfig.theme.gold,
+  "--ivory": siteConfig.theme.ivory,
+  "--cream": siteConfig.theme.cream,
+  "--taupe": siteConfig.theme.taupe,
+  "--gray-beige": siteConfig.theme.grayBeige,
+  "--charcoal": siteConfig.theme.charcoal,
+} as CSSProperties;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${sans.variable} ${latin.variable}`}>
+    <html lang="th" className={`${sans.variable} ${latin.variable}`} style={themeStyle}>
       <body>{children}</body>
     </html>
   );

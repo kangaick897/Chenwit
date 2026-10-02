@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Eye, FileImage, Save, Upload } from "lucide-react";
+import { ArrowLeft, Eye, FileImage, Plus, Save, Upload, X } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { AdminShell } from "@/app/admin/_components/admin-shell";
@@ -95,6 +95,39 @@ export default async function AdminProjectEditPage({ params }: AdminProjectEditP
         </form>
       </section>
 
+      <section className="admin-floorplan-panel" aria-labelledby="admin-project-gallery-title">
+        <div className="admin-panel-head">
+          <div>
+            <p className="admin-eyebrow">Gallery</p>
+            <h2 id="admin-project-gallery-title">รูปเพิ่มเติม</h2>
+          </div>
+        </div>
+
+        <div className="admin-project-gallery-grid">
+          {project.gallery.slice(0, 9).map((image, index) => (
+            <article className="admin-project-gallery-card" key={`${image}-${index}`}>
+              <div className="admin-project-gallery-image">
+                <Image src={image} alt={`${project.title} รูปที่ ${index + 1}`} fill sizes="180px" />
+              </div>
+              <button type="button" className="admin-gallery-remove" aria-label={`ลบรูปที่ ${index + 1}`}>
+                <X size={16} strokeWidth={2} />
+              </button>
+              <label className="admin-project-gallery-change">
+                <FileImage size={16} strokeWidth={1.8} />
+                <span>เปลี่ยนรูปที่ {index + 1}</span>
+                <input type="file" accept="image/*" />
+              </label>
+            </article>
+          ))}
+          <label className="admin-project-gallery-add">
+            <Plus size={26} strokeWidth={1.8} />
+            <span>เพิ่มรูปภาพ</span>
+            <small>รองรับรูปผลงาน Gallery</small>
+            <input type="file" accept="image/*" />
+          </label>
+        </div>
+      </section>
+
       <section className="admin-package-panel" aria-labelledby="admin-project-options-title">
         <div className="admin-panel-head">
           <div>
@@ -124,34 +157,6 @@ export default async function AdminProjectEditPage({ params }: AdminProjectEditP
             <span>ขอบเขตงาน</span>
             <input defaultValue={project.scope} />
           </label>
-        </div>
-      </section>
-
-      <section className="admin-floorplan-panel" aria-labelledby="admin-project-gallery-title">
-        <div className="admin-panel-head">
-          <div>
-            <p className="admin-eyebrow">Gallery</p>
-            <h2 id="admin-project-gallery-title">รูปเพิ่มเติม</h2>
-          </div>
-          <button type="button" className="admin-secondary-button">
-            <FileImage size={16} strokeWidth={1.8} />
-            เพิ่มรูป
-          </button>
-        </div>
-
-        <div className="admin-floorplan-grid">
-          {project.gallery.slice(0, 9).map((image, index) => (
-            <article className="admin-floorplan-card" key={`${image}-${index}`}>
-              <div className="admin-floorplan-image">
-                <Image src={image} alt={`${project.title} รูปที่ ${index + 1}`} fill sizes="220px" />
-              </div>
-              <label className="admin-upload-inline">
-                <FileImage size={16} strokeWidth={1.8} />
-                <span>เปลี่ยนรูปที่ {index + 1}</span>
-                <input type="file" accept="image/*" />
-              </label>
-            </article>
-          ))}
         </div>
       </section>
 

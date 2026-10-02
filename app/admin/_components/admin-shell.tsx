@@ -11,6 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 
+import { logoutAdmin } from "@/app/admin/actions";
 import { siteConfig } from "@/config/site";
 
 type AdminSection = "dashboard" | "houses" | "projects" | "settings";
@@ -74,10 +75,12 @@ export function AdminShell({
             <ArrowLeft size={16} strokeWidth={1.8} />
             กลับไปหน้าเว็บ
           </Link>
-          <Link className="admin-mini-link" href="/admin">
-            <LogOut size={16} strokeWidth={1.8} />
-            ออกจากระบบ
-          </Link>
+          <form action={logoutAdmin}>
+            <button className="admin-mini-link" type="submit">
+              <LogOut size={16} strokeWidth={1.8} />
+              ออกจากระบบ
+            </button>
+          </form>
         </div>
       </aside>
 

@@ -16,12 +16,18 @@ export const siteConfig = {
     charcoal: "#373420",
   },
   contact: {
+    officeTitle: "สำนักงานใหญ่",
     phone: "080-979-6155",
     lineId: "@atmindhouse",
     lineUrl: "https://line.me/ti/p/4rA7xBAA9-",
     email: "atmindhouse@gmail.com",
     facebook: "https://www.facebook.com/",
+    facebookLabel: "CHENWIT HOUSE BUILDER",
     address: "กรุงเทพมหานครและปริมณฑล",
+    businessHours: [
+      "วันจันทร์-วันเสาร์ ให้บริการตั้งแต่ 08.30-17.30",
+      "วันอาทิตย์ นัดหมายล่วงหน้า",
+    ],
   },
   navigation: [
     { label: "หน้าแรก", href: "/" },

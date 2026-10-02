@@ -1,4 +1,4 @@
-import { Building2, Clock, Mail, MapPin, MessageCircle, Phone, Share2 } from "lucide-react";
+import { Building2, Clock, Mail, MessageCircle, Phone, Share2 } from "lucide-react";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -28,16 +28,19 @@ export default function ContactPage() {
             <div className="contact-office">
               <div>
                 <Building2 size={26} strokeWidth={1.5} />
-                <h2>สำนักงานใหญ่</h2>
+                <h2>{siteConfig.contact.officeTitle}</h2>
                 <p>{siteConfig.contact.address}</p>
               </div>
               <div>
                 <Clock size={26} strokeWidth={1.5} />
                 <h2>วันทำการ</h2>
                 <p>
-                  วันจันทร์-วันเสาร์ ให้บริการตั้งแต่ 08.30-17.30
-                  <br />
-                  วันอาทิตย์ นัดหมายล่วงหน้า
+                  {siteConfig.contact.businessHours.map((line, index) => (
+                    <span key={line}>
+                      {line}
+                      {index < siteConfig.contact.businessHours.length - 1 ? <br /> : null}
+                    </span>
+                  ))}
                 </p>
               </div>
             </div>
@@ -71,15 +74,8 @@ export default function ContactPage() {
                 <div>
                   <strong>Facebook:</strong>
                   <a href={siteConfig.contact.facebook} target="_blank" rel="noreferrer">
-                    CHENWIT HOUSE BUILDER
+                    {siteConfig.contact.facebookLabel}
                   </a>
-                </div>
-              </div>
-              <div className="contact-item">
-                <MapPin size={21} strokeWidth={1.4} />
-                <div>
-                  <strong>พื้นที่ให้บริการ:</strong>
-                  <span>{siteConfig.contact.address}</span>
                 </div>
               </div>
             </div>

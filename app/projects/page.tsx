@@ -90,14 +90,6 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
               })}
             </div>
 
-            <div className="section-heading portfolio-heading">
-              <div>
-                <p className="eyebrow">RESULT</p>
-                <h2>พบ {filteredProjects.length} ผลงาน</h2>
-              </div>
-              <p>เลือกดูตามหมวดหมู่ หรือเปิดรายละเอียดเพื่อใส่ภาพ รายละเอียดงาน และไฮไลต์ของแต่ละไซต์ได้</p>
-            </div>
-
             {pageProjects.length > 0 ? (
               <div className="portfolio-grid">
                 {pageProjects.map((project) => {

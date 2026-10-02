@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
-import { LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
 
+import { loginAdmin } from "@/app/admin/actions";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -10,7 +10,23 @@ export const metadata: Metadata = {
   description: "เข้าสู่ระบบหลังบ้านสำหรับจัดการข้อมูลเว็บไซต์",
 };
 
-export default function AdminLoginPage() {
+type AdminLoginPageProps = {
+  searchParams?: Promise<{
+    error?: string;
+    next?: string;
+  }>;
+};
+
+const errorMessageByCode: Record<string, string> = {
+  invalid: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+  missing: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน",
+  unauthorized: "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งานหลังบ้าน",
+};
+
+export default async function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
+  const params = await searchParams;
+  const errorMessage = params?.error ? errorMessageByCode[params.error] : null;
+
   return (
     <main className="admin-login-page">
       <section className="admin-login-panel" aria-labelledby="admin-login-title">
@@ -30,12 +46,13 @@ export default function AdminLoginPage() {
           <p>สำหรับแก้แบบบ้าน ผลงาน รูปภาพ และข้อมูลติดต่อของเว็บไซต์</p>
         </div>
 
-        <form className="admin-login-form">
+        <form className="admin-login-form" action={loginAdmin}>
+          <input type="hidden" name="next" value={params?.next ?? "/admin/dashboard"} />
           <label>
-            <span>อีเมล</span>
+            <span>ชื่อผู้ใช้</span>
             <span className="admin-input-wrap">
-              <Mail size={17} strokeWidth={1.8} />
-              <input type="email" placeholder="admin@chenwit.com" autoComplete="email" />
+              <UserRound size={17} strokeWidth={1.8} />
+              <input name="username" type="text" placeholder="chenwit101" autoComplete="username" />
             </span>
           </label>
 
@@ -43,18 +60,20 @@ export default function AdminLoginPage() {
             <span>รหัสผ่าน</span>
             <span className="admin-input-wrap">
               <LockKeyhole size={17} strokeWidth={1.8} />
-              <input type="password" placeholder="••••••••" autoComplete="current-password" />
+              <input name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
             </span>
           </label>
 
-          <Link className="admin-login-submit" href="/admin/dashboard">
-            เข้าสู่หลังบ้านตัวอย่าง
-          </Link>
+          {errorMessage ? <p className="admin-login-error">{errorMessage}</p> : null}
+
+          <button className="admin-login-submit" type="submit">
+            เข้าสู่หลังบ้าน
+          </button>
         </form>
 
         <div className="admin-login-note">
           <ShieldCheck size={18} strokeWidth={1.8} />
-          ตอนนี้เป็นหน้า prototype ก่อนต่อ Supabase Auth จริง
+          เชื่อมต่อ Supabase Auth และตรวจสิทธิ์แอดมินแล้ว
         </div>
       </section>
     </main>

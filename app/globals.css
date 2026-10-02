@@ -156,6 +156,17 @@
   font-weight: 700;
 }
 
+.admin-login-error {
+  margin: 0;
+  border: 1px solid rgb(143 63 44 / 22%);
+  border-radius: 8px;
+  background: rgb(143 63 44 / 8%);
+  color: #8f3f2c;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .admin-shell {
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr);
@@ -201,6 +212,14 @@
   font-weight: 700;
 }
 
+.admin-mini-link {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
 .admin-nav-link.is-active {
   background: var(--charcoal);
   color: var(--ivory);
@@ -217,6 +236,10 @@
   gap: 6px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
+}
+
+.admin-sidebar-foot form {
+  margin: 0;
 }
 
 .admin-main {
@@ -634,17 +657,71 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.admin-field-icon {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--accent-deep);
+}
+
+.admin-field-icon input,
+.admin-field-icon textarea {
+  border: 0;
+  padding-inline: 0;
+}
+
+.admin-field-icon.align-start {
+  align-items: start;
+  padding-top: 12px;
+}
+
+.admin-settings-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-theme-field {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.admin-color-control {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.admin-color-control input[type="color"] {
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  cursor: pointer;
+}
+
 .admin-house-cover-row {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: minmax(250px, 340px) minmax(150px, 190px);
   gap: 16px;
   align-items: stretch;
+  justify-content: start;
 }
 
 .admin-house-cover {
   position: relative;
   overflow: hidden;
-  min-height: 150px;
+  aspect-ratio: 16 / 9;
   border-radius: 8px;
   background: var(--surface);
 }
@@ -684,6 +761,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.admin-house-cover-row .admin-upload-dropzone {
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 14px;
 }
 
 .admin-filter-map-panel {
@@ -790,6 +873,129 @@
   font-size: 13px;
   font-weight: 800;
   text-align: center;
+}
+
+.admin-project-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px 20px;
+}
+
+.admin-project-gallery-card,
+.admin-project-gallery-add {
+  position: relative;
+  min-width: 0;
+}
+
+.admin-project-gallery-card {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-project-gallery-image,
+.admin-project-gallery-add {
+  overflow: hidden;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--gold) 10%, var(--white)), var(--surface));
+}
+
+.admin-project-gallery-image {
+  position: relative;
+  border: 1px solid var(--line);
+}
+
+.admin-project-gallery-image img {
+  object-fit: cover;
+}
+
+.admin-gallery-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 1;
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--charcoal) 14%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--charcoal) 88%, var(--navy));
+  color: var(--ivory);
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgb(18 28 32 / 18%);
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.admin-gallery-remove:hover {
+  background: #8f352b;
+  transform: translateY(-1px);
+}
+
+.admin-project-gallery-change {
+  position: relative;
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px dashed color-mix(in srgb, var(--accent-deep) 42%, var(--line));
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--accent-deep);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.admin-project-gallery-add {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  min-height: 150px;
+  border: 1px dashed color-mix(in srgb, var(--accent-deep) 50%, var(--line));
+  color: var(--accent-deep);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.admin-project-gallery-add:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--gold) 16%, var(--white));
+  transform: translateY(-1px);
+}
+
+.admin-project-gallery-add span {
+  color: var(--charcoal);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-project-gallery-add small {
+  max-width: 120px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.admin-project-gallery-change input,
+.admin-project-gallery-add input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .admin-package-grid {
@@ -1000,6 +1206,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .admin-project-gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .admin-house-editor,
   .admin-settings-grid {
     grid-template-columns: 1fr;
@@ -1044,12 +1254,22 @@
   .admin-floorplan-grid,
   .admin-package-grid,
   .admin-display-option-grid,
+  .admin-theme-grid,
   .admin-form-grid.two-cols {
     grid-template-columns: 1fr;
   }
 
+  .admin-project-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .admin-house-cover-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-house-cover-row .admin-upload-dropzone {
+    aspect-ratio: auto;
+    min-height: 116px;
   }
 
   .admin-category-row {
@@ -1074,6 +1294,12 @@
   .admin-secondary-button,
   .admin-primary-button {
     width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-project-gallery-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -3047,9 +3273,9 @@ h2 {
 }
 
 .portfolio-tab.is-active {
-  border-color: var(--charcoal);
-  background: var(--charcoal);
-  color: var(--white);
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+  background: var(--surface);
+  color: var(--charcoal);
 }
 
 .portfolio-tab.is-active strong {
