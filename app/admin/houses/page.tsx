@@ -26,10 +26,10 @@ export default async function AdminHousesPage() {
           <input type="search" placeholder="ค้นหา CH B 420" />
         </label>
         <div className="admin-toolbar-actions">
-          <button type="button" className="admin-primary-button">
+          <Link href="/admin/houses/new" className="admin-primary-button">
             <Plus size={16} strokeWidth={1.8} />
             เพิ่มแบบบ้าน
-          </button>
+          </Link>
         </div>
       </section>
 

@@ -696,6 +696,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.admin-form-grid.three-cols {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .admin-field-icon {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
@@ -737,6 +741,17 @@
 
 .admin-house-cover img {
   object-fit: cover;
+}
+
+.admin-cover-placeholder {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .admin-upload-dropzone,
@@ -1263,7 +1278,8 @@
   .admin-floorplan-grid,
   .admin-package-grid,
   .admin-display-option-grid,
-  .admin-form-grid.two-cols {
+  .admin-form-grid.two-cols,
+  .admin-form-grid.three-cols {
     grid-template-columns: 1fr;
   }
 

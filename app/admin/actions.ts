@@ -74,6 +74,37 @@ function getNumberValue(formData: FormData, key: string) {
   return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9ก-๙]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+async function getUniqueHouseSlug(baseValue: string) {
+  const supabase = await createServerSupabaseClient();
+  const baseSlug = slugify(baseValue) || `house-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (true) {
+    const { data, error } = await supabase.from("houses").select("id").eq("slug", slug).maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+}
+
 export async function saveAdminSettings(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   const businessHours = getTextValue(formData, "businessHours")
@@ -113,6 +144,68 @@ export async function saveAdminSettings(formData: FormData) {
   }
 
   redirect("/admin/settings?saved=1");
+}
+
+export async function createHouse(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const code = getTextValue(formData, "code");
+  const name = getTextValue(formData, "name");
+  const coverImageFile = formData.get("coverImageFile");
+
+  if (!code || !name) {
+    redirect("/admin/houses/new?error=missing");
+  }
+
+  if (!isUploadableImage(coverImageFile)) {
+    redirect("/admin/houses/new?error=cover");
+  }
+
+  let slug: string;
+
+  try {
+    slug = await getUniqueHouseSlug(code || name);
+  } catch {
+    redirect("/admin/houses/new?error=save");
+  }
+
+  let coverImageUrl = "";
+
+  try {
+    coverImageUrl = await uploadAdminImage(supabase, coverImageFile, `houses/${slug}`, "cover");
+  } catch {
+    redirect("/admin/houses/new?error=upload");
+  }
+
+  const { error } = await supabase.from("houses").insert({
+    slug,
+    code,
+    name,
+    cover_image_url: coverImageUrl,
+    style: getTextValue(formData, "style"),
+    location: getTextValue(formData, "location"),
+    starting_price: getTextValue(formData, "startingPrice"),
+    floors: `${Math.max(1, getNumberValue(formData, "floorCount"))} ชั้น`,
+    description: getTextValue(formData, "description"),
+    bedrooms: getNumberValue(formData, "bedrooms"),
+    bathrooms: getNumberValue(formData, "bathrooms"),
+    parking: getNumberValue(formData, "parking"),
+    is_published: true,
+  });
+
+  if (error) {
+    if (coverImageUrl) {
+      await removeAdminImages(supabase, [coverImageUrl]);
+    }
+
+    redirect("/admin/houses/new?error=save");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/houses");
+  revalidatePath("/admin/houses");
+  revalidatePath("/admin/dashboard");
+
+  redirect(`/admin/houses/${slug}/edit?saved=1`);
 }
 
 export async function saveHouse(formData: FormData) {
