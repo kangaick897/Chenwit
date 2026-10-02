@@ -368,28 +368,80 @@ export async function createHouse(formData: FormData) {
     redirect("/admin/houses/new?error=upload");
   }
 
-  const { error } = await supabase.from("houses").insert({
-    slug,
-    code,
-    name,
-    cover_image_url: coverImageUrl,
-    style: getTextValue(formData, "style"),
-    location: getTextValue(formData, "location"),
-    starting_price: getTextValue(formData, "startingPrice"),
-    floors: `${Math.max(1, getNumberValue(formData, "floorCount"))} ชั้น`,
-    description: getTextValue(formData, "description"),
-    bedrooms: getNumberValue(formData, "bedrooms"),
-    bathrooms: getNumberValue(formData, "bathrooms"),
-    parking: getNumberValue(formData, "parking"),
-    is_published: true,
-  });
+  const { data: house, error } = await supabase
+    .from("houses")
+    .insert({
+      slug,
+      code,
+      name,
+      cover_image_url: coverImageUrl,
+      style: getTextValue(formData, "style"),
+      location: getTextValue(formData, "location"),
+      starting_price: getTextValue(formData, "startingPrice"),
+      floors: `${Math.max(1, getNumberValue(formData, "floorCount"))} ชั้น`,
+      description: getTextValue(formData, "description"),
+      house_size: getTextValue(formData, "houseSize"),
+      usable_area: getTextValue(formData, "usableArea"),
+      land_size: getTextValue(formData, "landSize"),
+      bedrooms: getNumberValue(formData, "bedrooms"),
+      bathrooms: getNumberValue(formData, "bathrooms"),
+      parking: getNumberValue(formData, "parking"),
+      is_featured: formData.get("isFeatured") === "on",
+      is_published: formData.get("isPublished") === "on",
+      sort_order: getNumberValue(formData, "sortOrder"),
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !house) {
     if (coverImageUrl) {
       await removeAdminImages(supabase, [coverImageUrl]);
     }
 
     redirect("/admin/houses/new?error=save");
+  }
+
+  const pendingImageDeletes: string[] = [];
+  const floorPlanTitles = getTextValues(formData, "floorPlanTitle");
+  const floorPlanUploads = formData.getAll("floorPlanUpload");
+  const floorPlanRows: Array<{
+    house_id: string;
+    image_url: string;
+    sort_order: number;
+    title: string;
+  }> = [];
+
+  try {
+    for (let index = 0; index < floorPlanTitles.length; index += 1) {
+      const upload = floorPlanUploads[index];
+
+      if (!isUploadableImage(upload)) {
+        continue;
+      }
+
+      const imageUrl = await uploadAdminImage(supabase, upload, `houses/${slug}/floor-plans`, `floor-${index + 1}`);
+      pendingImageDeletes.push(imageUrl);
+      floorPlanRows.push({
+        house_id: house.id,
+        image_url: imageUrl,
+        sort_order: index + 1,
+        title: floorPlanTitles[index] || `ชั้น ${index + 1}`,
+      });
+    }
+  } catch {
+    await supabase.from("houses").delete().eq("id", house.id);
+    await removeAdminImages(supabase, [coverImageUrl, ...pendingImageDeletes]);
+    redirect("/admin/houses/new?error=upload");
+  }
+
+  if (floorPlanRows.length > 0) {
+    const { error: floorPlanError } = await supabase.from("house_floor_plans").insert(floorPlanRows);
+
+    if (floorPlanError) {
+      await supabase.from("houses").delete().eq("id", house.id);
+      await removeAdminImages(supabase, [coverImageUrl, ...pendingImageDeletes]);
+      redirect("/admin/houses/new?error=save");
+    }
   }
 
   revalidatePath("/");

@@ -2,10 +2,30 @@
 
 import Image from "next/image";
 import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
-import { Save, Upload } from "lucide-react";
+import {
+  Bath,
+  BedDouble,
+  Car,
+  FileImage,
+  Home,
+  Maximize2,
+  Plus,
+  Ruler,
+  Save,
+  Trash2,
+  Upload,
+} from "lucide-react";
 
 import { createHouse } from "@/app/admin/actions";
 import { compressImageFile } from "@/lib/client-image-compression";
+
+type DraftFloorPlan = {
+  fileName: string | null;
+  id: string;
+  previewUrl: string | null;
+  title: string;
+  uploadFile: File | null;
+};
 
 export function HouseCreateForm() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -13,6 +33,28 @@ export function HouseCreateForm() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isPreparingImages, setIsPreparingImages] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [floorPlans, setFloorPlans] = useState<DraftFloorPlan[]>([]);
+
+  const addFloorPlan = () => {
+    setFloorPlans((plans) => [
+      ...plans,
+      {
+        fileName: null,
+        id: `draft-plan-${Date.now()}-${plans.length}`,
+        previewUrl: null,
+        title: `ชั้น ${plans.length + 1}`,
+        uploadFile: null,
+      },
+    ]);
+  };
+
+  const removeFloorPlan = (id: string) => {
+    setFloorPlans((plans) => plans.filter((plan) => plan.id !== id));
+  };
+
+  const updateFloorPlanTitle = (id: string, title: string) => {
+    setFloorPlans((plans) => plans.map((plan) => (plan.id === id ? { ...plan, title } : plan)));
+  };
 
   const updateCoverImage = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,6 +67,31 @@ export function HouseCreateForm() {
     reader.onload = () => {
       setCoverFile(file);
       setCoverPreviewUrl(typeof reader.result === "string" ? reader.result : null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const updateFloorPlanImage = (id: string, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFloorPlans((plans) =>
+        plans.map((plan) =>
+          plan.id === id
+            ? {
+                ...plan,
+                fileName: file.name,
+                previewUrl: typeof reader.result === "string" ? reader.result : null,
+                uploadFile: file,
+              }
+            : plan,
+        ),
+      );
     };
     reader.readAsDataURL(file);
   };
@@ -43,8 +110,18 @@ export function HouseCreateForm() {
 
     void (async () => {
       formData.delete("coverImageFile");
+      formData.delete("floorPlanUpload");
       const compressedCover = await compressImageFile(coverFile, { maxSize: 1600, quality: 0.84 });
       formData.append("coverImageFile", compressedCover);
+
+      for (const plan of floorPlans) {
+        if (plan.uploadFile) {
+          const compressedFloorPlan = await compressImageFile(plan.uploadFile, { maxSize: 2000, quality: 0.86 });
+          formData.append("floorPlanUpload", compressedFloorPlan);
+        } else {
+          formData.append("floorPlanUpload", "");
+        }
+      }
 
       setIsPreparingImages(false);
       startTransition(() => {
@@ -111,35 +188,127 @@ export function HouseCreateForm() {
             </label>
           </div>
 
-          <div className="admin-form-grid three-cols">
-            <label>
-              <span>ห้องนอน</span>
-              <input name="bedrooms" type="number" min={0} defaultValue={0} />
-            </label>
-            <label>
-              <span>ห้องน้ำ</span>
-              <input name="bathrooms" type="number" min={0} defaultValue={0} />
-            </label>
-            <label>
-              <span>ที่จอดรถ</span>
-              <input name="parking" type="number" min={0} defaultValue={0} />
-            </label>
-          </div>
-
           <label>
             <span>คำอธิบาย</span>
             <textarea name="description" rows={4} placeholder="รายละเอียดแบบบ้านโดยย่อ" />
           </label>
 
+          <div className="admin-form-grid two-cols">
+            <label>
+              <span>ลำดับการแสดงผล</span>
+              <input name="sortOrder" type="number" inputMode="numeric" defaultValue={0} />
+            </label>
+          </div>
+
+          <div className="admin-form-grid two-cols">
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isPublished" type="checkbox" defaultChecked />
+              <span>เผยแพร่บนหน้าบ้าน</span>
+            </label>
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isFeatured" type="checkbox" />
+              <span>แสดงในหน้าแรก</span>
+            </label>
+          </div>
+
           {uploadError ? <p className="admin-inline-error">{uploadError}</p> : null}
+        </div>
+      </section>
+
+      <section className="admin-floorplan-panel" aria-labelledby="admin-floorplan-create-title">
+        <div className="admin-panel-head">
+          <div>
+            <p className="admin-eyebrow">Floor Plan</p>
+            <h2 id="admin-floorplan-create-title">รูปแปลนบ้าน</h2>
+          </div>
+          <button type="button" className="admin-secondary-button" onClick={addFloorPlan}>
+            <Plus size={16} strokeWidth={1.8} />
+            เพิ่มแปลน
+          </button>
+        </div>
+
+        <div className="admin-floorplan-grid">
+          {floorPlans.map((plan, index) => (
+            <article className="admin-floorplan-card" key={plan.id}>
+              {plan.previewUrl ? (
+                <div className="admin-floorplan-image">
+                  <Image src={plan.previewUrl} alt={plan.title} fill sizes="220px" unoptimized />
+                </div>
+              ) : (
+                <div className="admin-floorplan-placeholder">
+                  <FileImage size={28} strokeWidth={1.7} />
+                  <span>ยังไม่ได้เลือกรูป</span>
+                </div>
+              )}
+              <label>
+                <span>ชื่อแปลน</span>
+                <input
+                  name="floorPlanTitle"
+                  value={plan.title}
+                  onChange={(event) => updateFloorPlanTitle(plan.id, event.target.value)}
+                />
+              </label>
+              <label className="admin-upload-inline">
+                <FileImage size={16} strokeWidth={1.8} />
+                <span>{plan.fileName ? plan.fileName : `เลือกรูปแปลน ${index + 1}`}</span>
+                <input type="file" accept="image/*" onChange={(event) => updateFloorPlanImage(plan.id, event)} />
+              </label>
+              <button type="button" className="admin-floorplan-remove" onClick={() => removeFloorPlan(plan.id)}>
+                <Trash2 size={15} strokeWidth={1.8} />
+                ลบแปลน
+              </button>
+            </article>
+          ))}
+          {floorPlans.length === 0 ? <div className="admin-empty-state">ยังไม่มีรูปแปลน กดเพิ่มแปลนเพื่ออัปโหลด</div> : null}
+        </div>
+      </section>
+
+      <section className="admin-package-panel" aria-labelledby="admin-package-create-title">
+        <div className="admin-panel-head">
+          <div>
+            <p className="admin-eyebrow">Package</p>
+            <h2 id="admin-package-create-title">รายละเอียดแพ็กเกจที่โชว์บนหน้าแบบบ้าน</h2>
+          </div>
+        </div>
+        <div className="admin-package-grid">
+          <label>
+            <Home size={19} strokeWidth={1.7} />
+            <span>ขนาดตัวบ้าน</span>
+            <input name="houseSize" placeholder="เช่น กว้าง 18 ม. ลึก 22 ม." />
+          </label>
+          <label>
+            <Ruler size={19} strokeWidth={1.7} />
+            <span>พื้นที่ใช้สอย</span>
+            <input name="usableArea" placeholder="เช่น 420 ตร.ม." />
+          </label>
+          <label>
+            <Maximize2 size={19} strokeWidth={1.7} />
+            <span>ขนาดที่ดิน</span>
+            <input name="landSize" placeholder="เช่น เริ่มต้น 100 ตร.ว." />
+          </label>
+          <label>
+            <BedDouble size={19} strokeWidth={1.7} />
+            <span>ห้องนอน</span>
+            <input name="bedrooms" type="number" min={0} defaultValue={0} />
+          </label>
+          <label>
+            <Bath size={19} strokeWidth={1.7} />
+            <span>ห้องน้ำ</span>
+            <input name="bathrooms" type="number" min={0} defaultValue={0} />
+          </label>
+          <label>
+            <Car size={19} strokeWidth={1.7} />
+            <span>ที่จอดรถ</span>
+            <input name="parking" type="number" min={0} defaultValue={0} />
+          </label>
         </div>
       </section>
 
       <section className="admin-save-panel" aria-label="บันทึกแบบบ้านใหม่">
         <div>
           <p className="admin-eyebrow">Save Changes</p>
-          <h2>สร้างแบบบ้านและไปแก้รายละเอียดต่อ</h2>
-          <p>ระบบจะบีบรูปเป็น WebP แล้วอัปโหลดเข้า Supabase Storage ก่อนสร้างข้อมูล</p>
+          <h2>สร้างแบบบ้านพร้อมข้อมูลทั้งหมด</h2>
+          <p>ระบบจะบีบรูปเป็น WebP แล้วอัปโหลดรูปปกและรูปแปลนก่อนสร้างข้อมูลใน Supabase</p>
         </div>
         <button type="submit" className="admin-primary-button" disabled={isSaving}>
           <Save size={16} strokeWidth={1.8} />
