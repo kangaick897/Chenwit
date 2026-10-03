@@ -6,9 +6,9 @@ import {
   Bath,
   BedDouble,
   Car,
+  CookingPot,
   FileImage,
   Home,
-  Maximize2,
   Plus,
   Ruler,
   Save,
@@ -20,7 +20,6 @@ import { createHouse } from "@/app/admin/actions";
 import { compressImageFile } from "@/lib/client-image-compression";
 
 type DraftFloorPlan = {
-  fileName: string | null;
   id: string;
   previewUrl: string | null;
   title: string;
@@ -39,7 +38,6 @@ export function HouseCreateForm() {
     setFloorPlans((plans) => [
       ...plans,
       {
-        fileName: null,
         id: `draft-plan-${Date.now()}-${plans.length}`,
         previewUrl: null,
         title: `ชั้น ${plans.length + 1}`,
@@ -85,7 +83,6 @@ export function HouseCreateForm() {
           plan.id === id
             ? {
                 ...plan,
-                fileName: file.name,
                 previewUrl: typeof reader.result === "string" ? reader.result : null,
                 uploadFile: file,
               }
@@ -146,6 +143,17 @@ export function HouseCreateForm() {
             </div>
           </div>
 
+          <div className="admin-toggle-group">
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isPublished" type="checkbox" defaultChecked />
+              <span>แสดงในแบบบ้าน</span>
+            </label>
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isFeatured" type="checkbox" />
+              <span>แสดงในหน้าแรก</span>
+            </label>
+          </div>
+
           <div className="admin-house-cover-row">
             <div className="admin-house-cover">
               {coverPreviewUrl ? (
@@ -200,17 +208,6 @@ export function HouseCreateForm() {
             </label>
           </div>
 
-          <div className="admin-form-grid two-cols">
-            <label className="admin-toggle-row admin-toggle-row-standalone">
-              <input name="isPublished" type="checkbox" defaultChecked />
-              <span>เผยแพร่บนหน้าบ้าน</span>
-            </label>
-            <label className="admin-toggle-row admin-toggle-row-standalone">
-              <input name="isFeatured" type="checkbox" />
-              <span>แสดงในหน้าแรก</span>
-            </label>
-          </div>
-
           {uploadError ? <p className="admin-inline-error">{uploadError}</p> : null}
         </div>
       </section>
@@ -230,16 +227,22 @@ export function HouseCreateForm() {
         <div className="admin-floorplan-grid">
           {floorPlans.map((plan, index) => (
             <article className="admin-floorplan-card" key={plan.id}>
-              {plan.previewUrl ? (
-                <div className="admin-floorplan-image">
+              <label
+                className={plan.previewUrl
+                  ? "admin-floorplan-image admin-image-upload"
+                  : "admin-floorplan-placeholder admin-image-upload"}
+              >
+                {plan.previewUrl ? (
                   <Image src={plan.previewUrl} alt={plan.title} fill sizes="220px" unoptimized />
-                </div>
-              ) : (
-                <div className="admin-floorplan-placeholder">
-                  <FileImage size={28} strokeWidth={1.7} />
-                  <span>ยังไม่ได้เลือกรูป</span>
-                </div>
-              )}
+                ) : (
+                  <>
+                    <FileImage size={28} strokeWidth={1.7} />
+                    <span>เลือกรูปแปลน {index + 1}</span>
+                  </>
+                )}
+                {plan.previewUrl ? <span className="admin-image-upload-action">เปลี่ยนรูปแปลน {index + 1}</span> : null}
+                <input type="file" accept="image/*" onChange={(event) => updateFloorPlanImage(plan.id, event)} />
+              </label>
               <label>
                 <span>ชื่อแปลน</span>
                 <input
@@ -247,11 +250,6 @@ export function HouseCreateForm() {
                   value={plan.title}
                   onChange={(event) => updateFloorPlanTitle(plan.id, event.target.value)}
                 />
-              </label>
-              <label className="admin-upload-inline">
-                <FileImage size={16} strokeWidth={1.8} />
-                <span>{plan.fileName ? plan.fileName : `เลือกรูปแปลน ${index + 1}`}</span>
-                <input type="file" accept="image/*" onChange={(event) => updateFloorPlanImage(plan.id, event)} />
               </label>
               <button type="button" className="admin-floorplan-remove" onClick={() => removeFloorPlan(plan.id)}>
                 <Trash2 size={15} strokeWidth={1.8} />
@@ -282,9 +280,9 @@ export function HouseCreateForm() {
             <input name="usableArea" placeholder="เช่น 420 ตร.ม." />
           </label>
           <label>
-            <Maximize2 size={19} strokeWidth={1.7} />
-            <span>ขนาดที่ดิน</span>
-            <input name="landSize" placeholder="เช่น เริ่มต้น 100 ตร.ว." />
+            <CookingPot size={19} strokeWidth={1.7} />
+            <span>ห้องครัว</span>
+            <input name="kitchens" type="number" min={0} placeholder="จำนวนห้อง" />
           </label>
           <label>
             <BedDouble size={19} strokeWidth={1.7} />

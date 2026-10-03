@@ -6,14 +6,13 @@ import {
   Bath,
   BedDouble,
   Car,
+  CookingPot,
   FileImage,
   Home,
-  Maximize2,
   Plus,
   Ruler,
   Save,
   Trash2,
-  Upload,
 } from "lucide-react";
 
 import { saveHouse } from "@/app/admin/actions";
@@ -25,7 +24,6 @@ type HouseEditorFormProps = {
 };
 
 type EditableFloorPlan = {
-  fileName: string | null;
   id: string;
   image: string | null;
   persistedImage: string | null;
@@ -44,7 +42,6 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
   const [isPending, startTransition] = useTransition();
   const [editableFloorPlans, setEditableFloorPlans] = useState<EditableFloorPlan[]>(() =>
     floorPlans.map((plan, index) => ({
-      fileName: null,
       id: `existing-plan-${index}`,
       image: plan.imageUrl,
       persistedImage: plan.imageUrl,
@@ -58,7 +55,6 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
     setEditableFloorPlans((plans) => [
       ...plans,
       {
-        fileName: null,
         id: `draft-plan-${Date.now()}-${plans.length}`,
         image: null,
         persistedImage: null,
@@ -108,7 +104,6 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
           plan.id === id
             ? {
                 ...plan,
-                fileName: file.name,
                 previewUrl: typeof reader.result === "string" ? reader.result : null,
                 uploadFile: file,
               }
@@ -176,8 +171,19 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
             <span className="admin-status is-live">ตัวอย่างจาก {house.code}</span>
           </div>
 
-          <div className="admin-house-cover-row">
-            <div className="admin-house-cover">
+          <div className="admin-toggle-group">
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isPublished" type="checkbox" defaultChecked={house.isPublished} />
+              <span>แสดงในแบบบ้าน</span>
+            </label>
+            <label className="admin-toggle-row admin-toggle-row-standalone">
+              <input name="isFeatured" type="checkbox" defaultChecked={house.isFeatured} />
+              <span>แสดงในหน้าแรก</span>
+            </label>
+          </div>
+
+          <div className="admin-house-cover-row admin-house-cover-row-single">
+            <label className="admin-house-cover admin-image-upload">
               <Image
                 src={coverImageSrc}
                 alt={house.name}
@@ -185,10 +191,7 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
                 sizes="260px"
                 unoptimized={Boolean(coverPreviewUrl)}
               />
-            </div>
-            <label className="admin-upload-dropzone">
-              <Upload size={18} strokeWidth={1.8} />
-              <span>{coverFile ? coverFile.name : "เปลี่ยนรูปหน้าปก"}</span>
+              <span className="admin-image-upload-action">เปลี่ยนรูปหน้าปก</span>
               <input name="coverImageFile" type="file" accept="image/*" onChange={updateCoverImage} />
             </label>
           </div>
@@ -221,16 +224,6 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
             <textarea name="description" defaultValue={house.description} rows={4} />
           </label>
 
-          <div className="admin-form-grid two-cols">
-            <label className="admin-toggle-row admin-toggle-row-standalone">
-              <input name="isPublished" type="checkbox" defaultChecked={house.isPublished} />
-              <span>เผยแพร่บนหน้าบ้าน</span>
-            </label>
-            <label className="admin-toggle-row admin-toggle-row-standalone">
-              <input name="isFeatured" type="checkbox" defaultChecked={house.isFeatured} />
-              <span>แสดงในหน้าแรก</span>
-            </label>
-          </div>
         </div>
       </section>
 
@@ -253,8 +246,12 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
             return (
             <article className="admin-floorplan-card" key={plan.id}>
               <input type="hidden" name="floorPlanImageUrl" value={plan.persistedImage ?? ""} />
-              {imageSrc ? (
-                <div className="admin-floorplan-image">
+              <label
+                className={imageSrc
+                  ? "admin-floorplan-image admin-image-upload"
+                  : "admin-floorplan-placeholder admin-image-upload"}
+              >
+                {imageSrc ? (
                   <Image
                     src={imageSrc}
                     alt={plan.title}
@@ -262,28 +259,21 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
                     sizes="220px"
                     unoptimized={Boolean(plan.previewUrl)}
                   />
-                </div>
-              ) : (
-                <div className="admin-floorplan-placeholder">
-                  <FileImage size={28} strokeWidth={1.7} />
-                  <span>ยังไม่ได้เลือกรูป</span>
-                </div>
-              )}
+                ) : (
+                  <>
+                    <FileImage size={28} strokeWidth={1.7} />
+                    <span>เลือกรูปแปลน {index + 1}</span>
+                  </>
+                )}
+                {imageSrc ? <span className="admin-image-upload-action">เปลี่ยนรูปแปลน {index + 1}</span> : null}
+                <input type="file" accept="image/*" onChange={(event) => updateFloorPlanImage(plan.id, event)} />
+              </label>
               <label>
                 <span>ชื่อแปลน</span>
                 <input
                   name="floorPlanTitle"
                   value={plan.title}
                   onChange={(event) => updateFloorPlanTitle(plan.id, event.target.value)}
-                />
-              </label>
-              <label className="admin-upload-inline">
-                <FileImage size={16} strokeWidth={1.8} />
-                <span>{plan.fileName ? plan.fileName : `เปลี่ยนรูปแปลน ${index + 1}`}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => updateFloorPlanImage(plan.id, event)}
                 />
               </label>
               <button
@@ -319,9 +309,9 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
             <input name="usableArea" defaultValue={house.usableArea} />
           </label>
           <label>
-            <Maximize2 size={19} strokeWidth={1.7} />
-            <span>ขนาดที่ดิน</span>
-            <input name="landSize" defaultValue={house.landSize} />
+            <CookingPot size={19} strokeWidth={1.7} />
+            <span>ห้องครัว</span>
+            <input name="kitchens" type="number" min={0} defaultValue={house.kitchens ?? ""} />
           </label>
           <label>
             <BedDouble size={19} strokeWidth={1.7} />

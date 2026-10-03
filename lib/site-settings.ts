@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { siteConfig } from "@/config/site";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -17,7 +19,7 @@ type SiteSettingsRow = {
   tagline: string | null;
 };
 
-export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
+export const getPublicSiteSettings = cache(async (): Promise<PublicSiteSettings> => {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("site_settings")
@@ -49,4 +51,4 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
     },
     tagline: settings.tagline ?? siteConfig.tagline,
   };
-}
+});

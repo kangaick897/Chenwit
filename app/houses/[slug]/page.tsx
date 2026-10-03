@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Bath, BedDouble, Car, Home, Maximize2, Ruler } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Bath, BedDouble, Car, CookingPot, Home, Ruler } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { FloorPlanGallery } from "@/components/floorplan-gallery";
@@ -33,11 +33,11 @@ export default async function HouseDetailPage({ params }: HouseDetailPageProps) 
   }
 
   const detailStats = [
-    { icon: Maximize2, label: "ขนาดที่ดิน", value: house.landSize },
     { icon: Ruler, label: "พื้นที่ใช้สอย", value: house.usableArea },
     { icon: Home, label: "ขนาดตัวบ้าน", value: house.houseSize },
     { icon: BedDouble, label: "ห้องนอน", value: `${house.bedrooms} ห้อง` },
     { icon: Bath, label: "ห้องน้ำ", value: `${house.bathrooms} ห้อง` },
+    { icon: CookingPot, label: "ห้องครัว", value: house.kitchens === null ? "ไม่ระบุ" : `${house.kitchens} ห้อง` },
     { icon: Car, label: "ที่จอดรถ", value: `${house.parking} คัน` },
   ];
 

@@ -4,6 +4,7 @@ import { Noto_Sans_Thai, Poppins } from "next/font/google";
 import "./globals.css";
 
 import { siteConfig } from "@/config/site";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 const sans = Noto_Sans_Thai({
   variable: "--font-sans",
@@ -18,20 +19,24 @@ const latin = Poppins({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://example.com"),
-  title: {
-    default: siteConfig.seo.title,
-    template: `%s | ${siteConfig.companyName}`,
-  },
-  description: siteConfig.seo.description,
-  openGraph: {
-    title: siteConfig.seo.title,
-    description: siteConfig.seo.description,
-    type: "website",
-    locale: "th_TH",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getPublicSiteSettings();
+
+  return {
+    metadataBase: new URL("https://example.com"),
+    title: {
+      default: settings.companyName,
+      template: `%s | ${settings.companyName}`,
+    },
+    description: settings.seo.description,
+    openGraph: {
+      title: settings.companyName,
+      description: settings.seo.description,
+      type: "website",
+      locale: "th_TH",
+    },
+  };
+}
 
 const themeStyle = {
   "--navy": siteConfig.theme.navy,

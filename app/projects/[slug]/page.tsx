@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: ProjectDetailPageProps) {
 
   return {
     title: project ? `${project.title} | ผลงาน` : "ผลงาน",
-    description: project?.description,
+    description: project && (project.showDetails ?? true) ? project.description : undefined,
   };
 }
 
@@ -55,7 +55,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
             <div className="project-detail-intro">
               <div>
-                <p className="eyebrow">{categoryLabel}</p>
+                {showDetails ? <p className="eyebrow">{categoryLabel}</p> : null}
                 <h1>{project.title}</h1>
                 <p className="project-location">
                   <MapPin size={14} strokeWidth={1.4} />
@@ -67,6 +67,10 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             <div className="project-detail-hero">
               <Image src={project.image} alt={project.title} fill priority sizes="(max-width: 760px) 100vw, 1216px" />
             </div>
+
+            {showDetails && project.description.trim() ? (
+              <p className="project-detail-description">{project.description}</p>
+            ) : null}
 
             {showDetails && facts.length > 0 ? (
               <div className="project-detail-facts">

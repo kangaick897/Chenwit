@@ -98,29 +98,36 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
             {pageProjects.length > 0 ? (
               <div className="portfolio-grid">
                 {pageProjects.map((project) => {
-                  const categoryLabel =
-                    projectCategories.find((category) => category.slug === project.category)?.label ?? project.category;
+                  const showDetails = project.showDetails ?? true;
+                  const cardMeta = [project.status, project.area, project.year].filter(
+                    (value) => value.trim().length > 0,
+                  );
 
                   return (
                     <article className="portfolio-card" key={project.slug}>
-                      <Link className="portfolio-card-image" href={`/projects/${project.slug}`} aria-label={project.title}>
+                      <Link
+                        className="portfolio-card-image"
+                        href={`/projects/${encodeURIComponent(project.slug)}`}
+                        aria-label={project.title}
+                      >
                         <Image src={project.image} alt={project.title} fill sizes="(max-width: 760px) 100vw, 33vw" />
                       </Link>
                       <div className="portfolio-card-body">
-                        <p className="portfolio-card-category">{categoryLabel}</p>
                         <h2>
-                          <Link href={`/projects/${project.slug}`}>{project.title}</Link>
+                          <Link href={`/projects/${encodeURIComponent(project.slug)}`}>{project.title}</Link>
                         </h2>
                         <p className="portfolio-card-location">
                           <MapPin size={14} strokeWidth={1.6} />
                           {project.location}
                         </p>
-                        <div className="portfolio-card-meta">
-                          <span>{project.status}</span>
-                          <span>{project.area}</span>
-                          <span>{project.year}</span>
-                        </div>
-                        <Link className="portfolio-card-link" href={`/projects/${project.slug}`}>
+                        {showDetails && cardMeta.length > 0 ? (
+                          <div className="portfolio-card-meta">
+                            {cardMeta.map((value) => (
+                              <span key={value}>{value}</span>
+                            ))}
+                          </div>
+                        ) : null}
+                        <Link className="portfolio-card-link" href={`/projects/${encodeURIComponent(project.slug)}`}>
                           See More
                           <ArrowUpRight size={15} strokeWidth={1.6} />
                         </Link>

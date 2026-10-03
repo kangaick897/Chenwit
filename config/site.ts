@@ -5,7 +5,7 @@ export const siteConfig = {
   tagline: "บ้านที่ดี เริ่มจากความเข้าใจ",
   logo: "/assets/branding/chenwit-logo.jpg",
   logoBanner: "/assets/branding/chenwit-logo-banner-transparent.png",
-  heroImage: "/assets/hero/chenwit-hero-banner.png",
+  heroImage: "/assets/hero/chenwit-luxury-sunset.png",
   theme: {
     navy: "#121C20",
     gold: "#C19E6B",

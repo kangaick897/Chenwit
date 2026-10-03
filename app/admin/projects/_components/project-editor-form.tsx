@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
-import { FileImage, Plus, Save, Trash2, Upload } from "lucide-react";
+import { FileImage, Plus, Save, Trash2 } from "lucide-react";
 
 import { createProject, saveProject } from "@/app/admin/actions";
 import type { ProjectCategory } from "@/data/projects";
@@ -15,7 +15,6 @@ type ProjectEditorFormProps = {
 };
 
 type EditableGalleryImage = {
-  fileName: string | null;
   id: string;
   image: string | null;
   persistedImage: string | null;
@@ -31,7 +30,6 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
   const [isPending, startTransition] = useTransition();
   const [editableGallery, setEditableGallery] = useState<EditableGalleryImage[]>(() =>
     (project?.gallery ?? []).map((image, index) => ({
-      fileName: null,
       id: `existing-gallery-${index}`,
       image,
       persistedImage: image,
@@ -49,7 +47,6 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
     }
 
     const nextImages: EditableGalleryImage[] = files.map((file, index) => ({
-      fileName: file.name,
       id: `draft-gallery-${Date.now()}-${index}`,
       image: null,
       persistedImage: null,
@@ -76,7 +73,6 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
         image.id === id
           ? {
               ...image,
-              fileName: file.name,
               previewUrl: URL.createObjectURL(file),
               uploadFile: file,
             }
@@ -145,6 +141,7 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
 
   return (
     <form onSubmit={handleSubmit} className="admin-house-edit-form">
+      <input type="hidden" name="isPublished" value={project?.isPublished === false ? "off" : "on"} />
       {project ? (
         <>
           <input type="hidden" name="id" value={project.id} />
@@ -165,8 +162,8 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
             </div>
           </div>
 
-          <div className="admin-house-cover-row">
-            <div className="admin-house-cover">
+          <div className="admin-house-cover-row admin-house-cover-row-single">
+            <label className="admin-house-cover admin-image-upload">
               {coverImageSrc ? (
                 <Image
                   src={coverImageSrc}
@@ -176,12 +173,11 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
                   unoptimized={Boolean(coverPreviewUrl)}
                 />
               ) : (
-                <div className="admin-cover-placeholder">เลือกรูปหน้าปก</div>
+                <div className="admin-cover-placeholder">ยังไม่มีรูปหน้าปก</div>
               )}
-            </div>
-            <label className="admin-upload-dropzone">
-              <Upload size={18} strokeWidth={1.8} />
-              <span>{coverFile ? coverFile.name : "อัปโหลดรูปหน้าปก"}</span>
+              <span className="admin-image-upload-action">
+                {coverImageSrc ? "เปลี่ยนรูปหน้าปก" : "อัปโหลดรูปหน้าปก"}
+              </span>
               <input name="coverImageFile" type="file" accept="image/*" onChange={updateCoverImage} />
             </label>
           </div>
@@ -205,31 +201,43 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
               <span>สถานที่</span>
               <input name="location" defaultValue={project?.location} placeholder="เช่น กรุงเทพฯ" />
             </label>
-            <label>
-              <span>สถานะ</span>
-              <input name="status" defaultValue={project?.status} placeholder="เช่น ส่งมอบแล้ว" />
-            </label>
-            <label>
-              <span>ปีที่ดำเนินงาน</span>
-              <input name="year" defaultValue={project?.year} placeholder="เช่น 2569" />
-            </label>
-            <label>
-              <span>พื้นที่โดยประมาณ</span>
-              <input name="area" defaultValue={project?.area} placeholder="เช่น 250 ตร.ม." />
-            </label>
           </div>
 
+          {uploadError ? <p className="admin-inline-error">{uploadError}</p> : null}
+        </div>
+      </section>
+
+      <section className="admin-package-panel admin-project-detail-panel" aria-labelledby="admin-project-options-title">
+        <div className="admin-panel-head">
+          <label className="admin-section-check">
+            <input name="showDetails" type="checkbox" defaultChecked={project?.showDetails ?? true} />
+            <span>
+              <strong id="admin-project-options-title">รายละเอียดเสริม</strong>
+            </span>
+          </label>
+        </div>
+
+        <div className="admin-form-grid two-cols">
           <label>
+            <span>สถานะ</span>
+            <input name="status" defaultValue={project?.status} placeholder="เช่น ส่งมอบแล้ว" />
+          </label>
+          <label>
+            <span>ปีที่ดำเนินงาน</span>
+            <input name="year" defaultValue={project?.year} placeholder="เช่น 2569" />
+          </label>
+          <label>
+            <span>พื้นที่โดยประมาณ</span>
+            <input name="area" defaultValue={project?.area} placeholder="เช่น 250 ตร.ม." />
+          </label>
+          <label className="admin-form-wide">
             <span>ขอบเขตงาน</span>
             <input name="scope" defaultValue={project?.scope} placeholder="เช่น ออกแบบและก่อสร้าง" />
           </label>
-
-          <label>
+          <label className="admin-form-wide">
             <span>คำอธิบาย</span>
             <textarea name="description" rows={4} defaultValue={project?.description} />
           </label>
-
-          {uploadError ? <p className="admin-inline-error">{uploadError}</p> : null}
         </div>
       </section>
 
@@ -248,8 +256,12 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
             return (
               <article className="admin-project-gallery-card" key={image.id}>
                 <input type="hidden" name="galleryImageUrl" value={image.persistedImage ?? ""} />
-                {imageSrc ? (
-                  <div className="admin-project-gallery-image">
+                <label
+                  className={imageSrc
+                    ? "admin-project-gallery-image admin-image-upload"
+                    : "admin-project-gallery-add admin-image-upload"}
+                >
+                  {imageSrc ? (
                     <Image
                       src={imageSrc}
                       alt={`รูปผลงาน ${index + 1}`}
@@ -257,13 +269,14 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
                       sizes="180px"
                       unoptimized={Boolean(image.previewUrl)}
                     />
-                  </div>
-                ) : (
-                  <div className="admin-project-gallery-add" aria-hidden="true">
+                  ) : (
                     <FileImage size={22} strokeWidth={1.8} />
-                    <span>ยังไม่ได้เลือกรูป</span>
-                  </div>
-                )}
+                  )}
+                  <span className={imageSrc ? "admin-image-upload-action" : undefined}>
+                    {imageSrc ? `เปลี่ยนรูปที่ ${index + 1}` : `เลือกรูปที่ ${index + 1}`}
+                  </span>
+                  <input type="file" accept="image/*" onChange={(event) => updateGalleryImage(image.id, event)} />
+                </label>
                 <button
                   type="button"
                   className="admin-gallery-remove"
@@ -272,11 +285,6 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
                 >
                   <Trash2 size={14} strokeWidth={2} />
                 </button>
-                <label className="admin-project-gallery-change">
-                  <FileImage size={15} strokeWidth={1.8} />
-                  <span>{image.fileName ? image.fileName : `เปลี่ยนรูปที่ ${index + 1}`}</span>
-                  <input type="file" accept="image/*" onChange={(event) => updateGalleryImage(image.id, event)} />
-                </label>
               </article>
             );
           })}
@@ -289,29 +297,10 @@ export function ProjectEditorForm({ categories, project }: ProjectEditorFormProp
         </div>
       </section>
 
-      <section className="admin-package-panel" aria-labelledby="admin-project-options-title">
-        <div className="admin-panel-head">
-          <div>
-            <p className="admin-eyebrow">Project Detail</p>
-            <h2 id="admin-project-options-title">รายละเอียดผลงาน</h2>
-          </div>
-          <label className="admin-toggle-row admin-toggle-row-standalone">
-            <input name="showDetails" type="checkbox" defaultChecked={project?.showDetails ?? true} />
-            <span>เปิดใช้งาน</span>
-          </label>
-        </div>
-
-        <label className="admin-toggle-row admin-toggle-row-standalone">
-          <input name="isPublished" type="checkbox" defaultChecked={project?.isPublished ?? true} />
-          <span>เผยแพร่บนหน้าบ้าน</span>
-        </label>
-      </section>
-
       <section className="admin-save-panel" aria-label="บันทึกข้อมูลผลงาน">
         <div>
           <p className="admin-eyebrow">Save Changes</p>
-          <h2>{isEditing ? "บันทึกข้อมูลผลงาน" : "สร้างผลงานและไปแก้รายละเอียดต่อ"}</h2>
-          <p>ระบบจะบีบรูปเป็น WebP แล้วอัปโหลดเข้า Supabase Storage ก่อนบันทึกข้อมูลและ Gallery</p>
+          <h2>{isEditing ? "บันทึกข้อมูลผลงาน" : "สร้างผลงาน"}</h2>
         </div>
         <button type="submit" className="admin-primary-button" disabled={isSaving}>
           <Save size={16} strokeWidth={1.8} />

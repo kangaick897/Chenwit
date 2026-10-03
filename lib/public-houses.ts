@@ -11,7 +11,7 @@ type HouseRow = {
   house_size: string | null;
   id: string;
   is_featured: boolean | null;
-  land_size: string | null;
+  kitchens: number | null;
   location: string | null;
   name: string;
   parking: number | null;
@@ -27,7 +27,15 @@ type FloorPlanRow = {
 };
 
 const houseFields =
-  "id,slug,code,name,cover_image_url,style,location,starting_price,floors,usable_area,house_size,land_size,description,bedrooms,bathrooms,parking,is_featured";
+  "id,slug,code,name,cover_image_url,style,location,starting_price,floors,usable_area,house_size,kitchens,description,bedrooms,bathrooms,parking,is_featured";
+
+function decodeRouteSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
 
 function mapHouse(row: HouseRow, floorPlans: FloorPlanRow[] = []): House {
   return {
@@ -41,7 +49,7 @@ function mapHouse(row: HouseRow, floorPlans: FloorPlanRow[] = []): House {
     floors: row.floors ?? "",
     usableArea: row.usable_area ?? "",
     houseSize: row.house_size ?? "",
-    landSize: row.land_size ?? "",
+    kitchens: row.kitchens ?? null,
     description: row.description ?? "",
     bedrooms: row.bedrooms ?? 0,
     bathrooms: row.bathrooms ?? 0,
@@ -96,7 +104,7 @@ export async function getPublishedHouseBySlug(slug: string) {
   const { data: house, error: houseError } = await supabase
     .from("houses")
     .select(houseFields)
-    .eq("slug", slug)
+    .eq("slug", decodeRouteSlug(slug))
     .eq("is_published", true)
     .maybeSingle();
 

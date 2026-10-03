@@ -32,6 +32,16 @@ export async function SiteFooter() {
             <div className="footer-links">
               <a href={`tel:${settings.contact.phone}`}>{settings.contact.phone}</a>
               <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
+              {settings.contact.lineUrl && settings.contact.lineId ? (
+                <a href={settings.contact.lineUrl} target="_blank" rel="noreferrer">
+                  LINE: {settings.contact.lineId}
+                </a>
+              ) : null}
+              {settings.contact.facebook && settings.contact.facebookLabel ? (
+                <a href={settings.contact.facebook} target="_blank" rel="noreferrer">
+                  Facebook: {settings.contact.facebookLabel}
+                </a>
+              ) : null}
               <span>{settings.contact.address}</span>
             </div>
           </div>

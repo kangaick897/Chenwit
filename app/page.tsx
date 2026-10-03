@@ -80,44 +80,37 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <section className="section section-principles" aria-labelledby="principles-title">
-          <div className="container principles-grid">
-            <div className="principles-heading">
+        <section className="section-principles" aria-labelledby="principles-title">
+          <div className="principles-photo">
+            <Image
+              src="/assets/branding/why-choose-us-house.png"
+              alt="ทีมงานกับเจ้าของบ้านหน้าโครงการที่ส่งมอบ"
+              fill
+              sizes="100vw"
+            />
+            <div className="container principles-photo-content">
               <p className="eyebrow">WHY CHOOSE US</p>
-              <h2 id="principles-title">
-                มากกว่า
-                <br />
-                แค่การสร้างบ้าน
-              </h2>
+              <h2 id="principles-title">มากกว่าแค่การสร้างบ้าน</h2>
               <p>
                 เราเชื่อว่าบ้านที่ดีไม่ได้วัดจากความสวยเพียงอย่างเดียว
                 แต่คือพื้นที่ที่ทำให้ทุกวันของคุณดีขึ้น
               </p>
             </div>
-            <div className="principles-list">
-              {principles.map((principle) => {
-                const Icon = principle.icon;
+          </div>
+          <div className="container principles-list">
+            {principles.map((principle) => {
+              const Icon = principle.icon;
 
-                return (
-                  <div className="principle-item" key={principle.title}>
-                    <Icon size={28} strokeWidth={1.2} />
-                    <div>
-                      <h3>{principle.title}</h3>
-                      <p>{principle.description}</p>
-                    </div>
+              return (
+                <div className="principle-item" key={principle.title}>
+                  <Icon size={28} strokeWidth={1.2} />
+                  <div>
+                    <h3>{principle.title}</h3>
+                    <p>{principle.description}</p>
                   </div>
-                );
-              })}
-            </div>
-            <div className="principles-image">
-              <Image
-                src="/assets/demo/interior-preview.webp"
-                alt="ภาพตัวอย่างมุมพักผ่อนภายในบ้าน"
-                fill
-                sizes="(max-width: 1000px) 100vw, 25vw"
-              />
-              <span className="principles-image-caption">A HOME THAT FEELS LIKE YOU</span>
-            </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -125,8 +118,8 @@ export default async function Home() {
           <div className="container site-feature">
             <div className="site-image-wrap">
               <Image
-                src="/assets/demo/interior-preview.webp"
-                alt="ภาพตัวอย่างบรรยากาศภายในบ้าน"
+                src="/assets/branding/site-construction.jpg"
+                alt="ภาพบ้านระหว่างการก่อสร้างที่หน้างานจริง"
                 fill
                 sizes="(max-width: 800px) 100vw, 50vw"
               />

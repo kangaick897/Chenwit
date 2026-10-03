@@ -142,14 +142,17 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
             <div className="admin-muted-cell">{categoryLabelBySlug.get(project.category) ?? project.category}</div>
             <div className="admin-row-actions">
               <Link
-                href={`/projects/${project.slug}`}
+                href={`/projects/${encodeURIComponent(project.slug)}`}
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`ดูตัวอย่าง ${project.title}`}
               >
                 <Eye size={16} strokeWidth={1.8} />
               </Link>
-              <Link href={`/admin/projects/${project.slug}/edit`} aria-label={`แก้ไข ${project.title}`}>
+              <Link
+                href={`/admin/projects/${encodeURIComponent(project.slug)}/edit`}
+                aria-label={`แก้ไข ${project.title}`}
+              >
                 <Edit3 size={16} strokeWidth={1.8} />
               </Link>
               <form action={deleteProject}>

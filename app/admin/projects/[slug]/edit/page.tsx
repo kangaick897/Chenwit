@@ -37,14 +37,19 @@ export default async function AdminProjectEditPage({ params, searchParams }: Adm
     <AdminShell
       active="projects"
       title={`แก้ไข ${project.title}`}
-      description="จัดการข้อมูลผลงาน รูปภาพ หมวดหมู่ และ field ที่จะแสดงบนหน้ารายละเอียดผลงาน"
+      description="จัดการข้อมูลผลงาน รูปภาพ หมวดหมู่ และรายละเอียดเสริมที่จะแสดงบนหน้าบ้าน"
     >
       <div className="admin-detail-actions">
         <Link className="admin-secondary-button" href="/admin/projects">
           <ArrowLeft size={16} strokeWidth={1.8} />
           กลับไปหน้ารายการ
         </Link>
-        <Link className="admin-secondary-button" href={`/projects/${project.slug}`} target="_blank" rel="noreferrer">
+        <Link
+          className="admin-secondary-button"
+          href={`/projects/${encodeURIComponent(project.slug)}`}
+          target="_blank"
+          rel="noreferrer"
+        >
           <Eye size={16} strokeWidth={1.8} />
           ดูหน้าผลงาน
         </Link>

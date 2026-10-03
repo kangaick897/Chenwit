@@ -74,6 +74,12 @@ function getNumberValue(formData: FormData, key: string) {
   return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
+function getOptionalNumberValue(formData: FormData, key: string) {
+  const value = getTextValue(formData, key);
+
+  return value ? getNumberValue(formData, key) : null;
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -81,6 +87,16 @@ function slugify(value: string) {
     .replace(/[^a-z0-9ก-๙]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+}
+
+function getAdminProjectEditPath(slug: string, searchParams = "") {
+  const suffix = searchParams ? `?${searchParams}` : "";
+
+  return `/admin/projects/${encodeURIComponent(slug)}/edit${suffix}`;
+}
+
+function getPublicProjectPath(slug: string) {
+  return `/projects/${encodeURIComponent(slug)}`;
 }
 
 async function getUniqueHouseSlug(baseValue: string) {
@@ -382,7 +398,7 @@ export async function createHouse(formData: FormData) {
       description: getTextValue(formData, "description"),
       house_size: getTextValue(formData, "houseSize"),
       usable_area: getTextValue(formData, "usableArea"),
-      land_size: getTextValue(formData, "landSize"),
+      kitchens: getOptionalNumberValue(formData, "kitchens"),
       bedrooms: getNumberValue(formData, "bedrooms"),
       bathrooms: getNumberValue(formData, "bathrooms"),
       parking: getNumberValue(formData, "parking"),
@@ -513,7 +529,7 @@ export async function createProject(formData: FormData) {
   try {
     await saveProjectGalleryImages(supabase, project.id, slug, title, formData, pendingImageDeletes);
   } catch {
-    redirect(`/admin/projects/${slug}/edit?error=upload`);
+    redirect(getAdminProjectEditPath(slug, "error=upload"));
   }
 
   await removeAdminImages(supabase, pendingImageDeletes);
@@ -523,7 +539,7 @@ export async function createProject(formData: FormData) {
   revalidatePath("/admin/projects");
   revalidatePath("/admin/dashboard");
 
-  redirect(`/admin/projects/${slug}/edit?saved=1`);
+  redirect(getAdminProjectEditPath(slug, "saved=1"));
 }
 
 export async function saveProject(formData: FormData) {
@@ -549,7 +565,7 @@ export async function saveProject(formData: FormData) {
       }
     }
   } catch {
-    redirect(`/admin/projects/${slug}/edit?error=upload`);
+    redirect(getAdminProjectEditPath(slug, "error=upload"));
   }
 
   const { error } = await supabase
@@ -570,7 +586,7 @@ export async function saveProject(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    redirect(`/admin/projects/${slug}/edit?error=save`);
+    redirect(getAdminProjectEditPath(slug, "error=save"));
   }
 
   try {
@@ -583,19 +599,19 @@ export async function saveProject(formData: FormData) {
       pendingImageDeletes,
     );
   } catch {
-    redirect(`/admin/projects/${slug}/edit?error=save`);
+    redirect(getAdminProjectEditPath(slug, "error=save"));
   }
 
   await removeAdminImages(supabase, pendingImageDeletes);
 
   revalidatePath("/");
   revalidatePath("/projects");
-  revalidatePath(`/projects/${slug}`);
+  revalidatePath(getPublicProjectPath(slug));
   revalidatePath("/admin/projects");
-  revalidatePath(`/admin/projects/${slug}/edit`);
+  revalidatePath(getAdminProjectEditPath(slug));
   revalidatePath("/admin/dashboard");
 
-  redirect(`/admin/projects/${slug}/edit?saved=1`);
+  redirect(getAdminProjectEditPath(slug, "saved=1"));
 }
 
 export async function deleteProject(formData: FormData) {
@@ -687,7 +703,7 @@ export async function saveHouse(formData: FormData) {
       description: getTextValue(formData, "description"),
       house_size: getTextValue(formData, "houseSize"),
       usable_area: getTextValue(formData, "usableArea"),
-      land_size: getTextValue(formData, "landSize"),
+      kitchens: getOptionalNumberValue(formData, "kitchens"),
       bedrooms: getNumberValue(formData, "bedrooms"),
       bathrooms: getNumberValue(formData, "bathrooms"),
       parking: getNumberValue(formData, "parking"),

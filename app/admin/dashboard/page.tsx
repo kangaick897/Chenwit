@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
-  Clock3,
   FolderKanban,
   Home,
   Image as ImageIcon,
@@ -18,12 +17,6 @@ export const metadata: Metadata = {
   title: "Admin Dashboard",
   description: "ภาพรวมหลังบ้านสำหรับจัดการเว็บไซต์",
 };
-
-const latestActivity = [
-  "แบบบ้านและผลงานตัวอย่างถูกเคลียร์ออกแล้ว",
-  "ระบบรูปแบบบ้านอัปโหลดเข้า Supabase Storage ได้แล้ว",
-  "หน้าบ้านอ่านแบบบ้านจาก Supabase แล้ว",
-];
 
 export default async function AdminDashboardPage() {
   const [houses, projects] = await Promise.all([getAdminHouses(), getAdminProjects()]);
@@ -58,25 +51,7 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="admin-dashboard-grid">
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <div>
-              <p className="admin-eyebrow">Next Step</p>
-              <h2>สิ่งที่ควรทำต่อ</h2>
-            </div>
-            <Clock3 size={22} strokeWidth={1.8} />
-          </div>
-          <ul className="admin-check-list">
-            {latestActivity.map((item) => (
-              <li key={item}>
-                <CheckCircle2 size={17} strokeWidth={1.9} />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-
+      <section className="admin-dashboard-grid admin-dashboard-grid-single">
         <div className="admin-panel">
           <div className="admin-panel-head">
             <div>

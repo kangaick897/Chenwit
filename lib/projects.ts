@@ -41,6 +41,14 @@ type CategoryRow = {
 const projectFields =
   "id,slug,title,location,cover_image_url,category_slug,status,year,area,scope,description,highlights,show_details,is_published,sort_order";
 
+function decodeRouteSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
+
 function mapProject(row: ProjectRow, gallery: ProjectImageRow[] = []): AdminProject {
   const galleryImages = gallery
     .filter((image) => image.image_url)
@@ -119,7 +127,7 @@ export async function getPublishedProjects() {
 
 export async function getProjectBySlug(slug: string, publishedOnly = true) {
   const supabase = await createServerSupabaseClient();
-  let query = supabase.from("projects").select(projectFields).eq("slug", slug);
+  let query = supabase.from("projects").select(projectFields).eq("slug", decodeRouteSlug(slug));
 
   if (publishedOnly) {
     query = query.eq("is_published", true);

@@ -19,7 +19,7 @@ export type AdminHouse = {
   floors: string;
   usableArea: string;
   houseSize: string;
-  landSize: string;
+  kitchens: number | null;
   description: string;
   bedrooms: number;
   bathrooms: number;
@@ -42,7 +42,7 @@ type HouseRow = {
   floors: string | null;
   usable_area: string | null;
   house_size: string | null;
-  land_size: string | null;
+  kitchens: number | null;
   description: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -60,7 +60,15 @@ type FloorPlanRow = {
 };
 
 const houseFields =
-  "id,slug,code,name,cover_image_url,style,location,starting_price,floors,usable_area,house_size,land_size,description,bedrooms,bathrooms,parking,is_featured,is_published,sort_order";
+  "id,slug,code,name,cover_image_url,style,location,starting_price,floors,usable_area,house_size,kitchens,description,bedrooms,bathrooms,parking,is_featured,is_published,sort_order";
+
+function decodeRouteSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
 
 function mapHouse(row: HouseRow, floorPlans: FloorPlanRow[] = []): AdminHouse {
   return {
@@ -75,7 +83,7 @@ function mapHouse(row: HouseRow, floorPlans: FloorPlanRow[] = []): AdminHouse {
     floors: row.floors ?? "",
     usableArea: row.usable_area ?? "",
     houseSize: row.house_size ?? "",
-    landSize: row.land_size ?? "",
+    kitchens: row.kitchens ?? null,
     description: row.description ?? "",
     bedrooms: row.bedrooms ?? 0,
     bathrooms: row.bathrooms ?? 0,
@@ -112,7 +120,7 @@ export async function getAdminHouseBySlug(slug: string): Promise<AdminHouse | nu
   const { data: house, error: houseError } = await supabase
     .from("houses")
     .select(houseFields)
-    .eq("slug", slug)
+    .eq("slug", decodeRouteSlug(slug))
     .maybeSingle();
 
   if (houseError) {

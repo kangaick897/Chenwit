@@ -9,7 +9,7 @@ export type House = {
   floors: string;
   usableArea: string;
   houseSize: string;
-  landSize: string;
+  kitchens: number | null;
   description: string;
   bedrooms: number;
   bathrooms: number;
