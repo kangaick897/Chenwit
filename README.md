@@ -2,11 +2,11 @@
 
 Next.js + Supabase website for a house-building business. Includes public house plans, project portfolio, contact pages, and an admin area for content, images, and company settings.
 
-**Start here:** [Client setup and handover](docs/CLIENT_SETUP.md). Do not deploy a clone with this repository's client branding, contact information, photos, or database credentials unchanged.
+**Start here:** [setup.md](setup.md), then follow the [client deployment runbook](docs/CLIENT_SETUP.md). Do not deploy a clone with this repository's client branding, contact information, photos, or database credentials unchanged.
 
 ## Local development
 
-1. Install Node.js 20+ and run `npm ci`.
+1. Use Node.js 24 (see `.nvmrc`; Next.js requires at least 20.9) and run `npm ci`.
 2. Copy `.env.example` to `.env.local` and fill in the new client's Supabase URL, publishable key, and site URL.
 3. Provision a **new** Supabase project using the migration steps in the client setup guide.
 4. Run `npm run dev` and open `http://localhost:3000`.
