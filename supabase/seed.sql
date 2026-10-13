@@ -1,0 +1,1 @@
+-- No client content is seeded. Add only non-sensitive local test data here.

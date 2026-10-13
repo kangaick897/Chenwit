@@ -21,9 +21,10 @@ const latin = Poppins({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getPublicSiteSettings();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   return {
-    metadataBase: new URL("https://example.com"),
+    metadataBase: new URL(siteUrl),
     title: {
       default: settings.companyName,
       template: `%s | ${settings.companyName}`,

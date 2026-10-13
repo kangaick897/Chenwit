@@ -52,7 +52,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
             <span>ชื่อผู้ใช้</span>
             <span className="admin-input-wrap">
               <UserRound size={17} strokeWidth={1.8} />
-              <input name="username" type="text" placeholder="chenwit101" autoComplete="username" />
+              <input name="username" type="text" placeholder="อีเมลผู้ดูแลระบบ" autoComplete="username" />
             </span>
           </label>
 
@@ -79,4 +79,3 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
     </main>
   );
 }
-

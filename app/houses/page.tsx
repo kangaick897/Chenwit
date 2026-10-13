@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { HouseFilterView } from "@/components/house-filter-view";
 import { StickyContact } from "@/components/sticky-contact";
 import { getPublishedHouses } from "@/lib/public-houses";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
   title: "แบบบ้าน",
@@ -10,7 +11,7 @@ export const metadata = {
 };
 
 export default async function HousesPage() {
-  const houses = await getPublishedHouses();
+  const [houses, settings] = await Promise.all([getPublishedHouses(), getPublicSiteSettings()]);
 
   return (
     <>
@@ -18,7 +19,7 @@ export default async function HousesPage() {
       <main className="page-main">
         <section className="page-hero houses-collection-hero">
           <div className="container">
-            <p className="eyebrow">CHENWIT HOUSE BUILDER</p>
+            <p className="eyebrow">{settings.companyName}</p>
             <h1>แบบบ้านของเรา</h1>
             <p>House Collection</p>
           </div>

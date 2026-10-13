@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
 import { getProjectCategories, getPublishedProjects } from "@/lib/projects";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 const PROJECTS_PER_PAGE = 9;
 
@@ -16,10 +17,7 @@ type ProjectsPageProps = {
   }>;
 };
 
-export const metadata = {
-  title: "ผลงาน | CHENWIT HOUSE BUILDER",
-  description: "รวมผลงานก่อสร้าง ต่อเติม รีโนเวท และไซต์งานของ CHENWIT HOUSE BUILDER",
-};
+export const metadata = { title: "ผลงาน" };
 
 function getProjectHref(category: string, page: number) {
   const params = new URLSearchParams();
@@ -38,10 +36,11 @@ function getProjectHref(category: string, page: number) {
 }
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
-  const [params, categories, projects] = await Promise.all([
+  const [params, categories, projects, settings] = await Promise.all([
     searchParams,
     getProjectCategories(),
     getPublishedProjects(),
+    getPublicSiteSettings(),
   ]);
   const projectCategories = [{ slug: "all", label: "ทั้งหมด" }, ...categories];
   const visibleCategories = projectCategories.filter(
@@ -67,7 +66,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
       <main className="page-main">
         <section className="portfolio-hero">
           <div className="container">
-            <p className="eyebrow">CHENWIT HOUSE BUILDER</p>
+            <p className="eyebrow">{settings.companyName}</p>
             <h1>ผลงานของเรา</h1>
             <p>Portfolio</p>
           </div>

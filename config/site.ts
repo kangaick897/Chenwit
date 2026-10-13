@@ -18,9 +18,9 @@ export const siteConfig = {
   contact: {
     officeTitle: "สำนักงานใหญ่",
     phone: "080-979-6155",
-    lineId: "@atmindhouse",
+    lineId: "",
     lineUrl: "https://line.me/ti/p/4rA7xBAA9-",
-    email: "atmindhouse@gmail.com",
+    email: "",
     facebook: "https://www.facebook.com/",
     facebookLabel: "CHENWIT HOUSE BUILDER",
     address: "กรุงเทพมหานครและปริมณฑล",
@@ -37,7 +37,7 @@ export const siteConfig = {
     { label: "ติดต่อเรา", href: "/contact" },
   ],
   seo: {
-    title: "AT MIND HOUSE | ออกแบบและสร้างบ้าน",
+    title: "CHENWIT HOUSE BUILDER | ออกแบบและสร้างบ้าน",
     description:
       "ออกแบบและสร้างบ้านสไตล์โมเดิร์น พร้อมดูแลทุกขั้นตอนตั้งแต่แนวคิดจนถึงส่งมอบ",
   },

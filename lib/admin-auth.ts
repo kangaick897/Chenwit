@@ -1,5 +1,3 @@
-const fallbackAdminEmailDomain = "chenwit-house-builder.com";
-
 export function resolveAdminEmail(login: string) {
   const normalizedLogin = login.trim().toLowerCase();
 
@@ -7,7 +5,7 @@ export function resolveAdminEmail(login: string) {
     return normalizedLogin;
   }
 
-  const domain = process.env.ADMIN_LOGIN_DOMAIN ?? fallbackAdminEmailDomain;
+  const domain = process.env.ADMIN_LOGIN_DOMAIN;
 
-  return `${normalizedLogin}@${domain}`;
+  return domain ? `${normalizedLogin}@${domain}` : normalizedLogin;
 }

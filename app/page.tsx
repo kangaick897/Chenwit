@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StickyContact } from "@/components/sticky-contact";
 import { siteConfig } from "@/config/site";
 import { getFeaturedHouses } from "@/lib/public-houses";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 const principles = [
   {
@@ -28,13 +29,13 @@ const principles = [
 ];
 
 export default async function Home() {
-  const featuredHouses = await getFeaturedHouses();
+  const [featuredHouses, settings] = await Promise.all([getFeaturedHouses(), getPublicSiteSettings()]);
 
   return (
     <>
       <SiteHeader />
       <main>
-        <section className="hero" aria-label="ภาพตัวอย่างบ้านจาก CHENWIT HOUSE BUILDER">
+        <section className="hero" aria-label={`ภาพตัวอย่างบ้านจาก ${settings.companyName}`}>
           <Image
             className="hero-image"
             src={siteConfig.heroImage}
@@ -44,7 +45,7 @@ export default async function Home() {
             sizes="100vw"
           />
           <div className="hero-overlay" />
-          <h1 className="visually-hidden">CHENWIT HOUSE BUILDER รับออกแบบและสร้างบ้าน</h1>
+          <h1 className="visually-hidden">{settings.companyName} รับออกแบบและสร้างบ้าน</h1>
         </section>
 
         {featuredHouses.length > 0 ? (
@@ -168,7 +169,7 @@ export default async function Home() {
       </main>
       <SiteFooter />
       <StickyContact />
-      {siteConfig.previewNotice ? (
+      {process.env.NODE_ENV === "development" && siteConfig.previewNotice ? (
         <p className="preview-notice">{siteConfig.previewNotice}</p>
       ) : null}
     </>

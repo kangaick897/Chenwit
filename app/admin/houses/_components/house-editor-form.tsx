@@ -335,9 +335,6 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
         <div>
           <p className="admin-eyebrow">Save Changes</p>
           <h2>บันทึกข้อมูลแบบบ้านทั้งหมด</h2>
-          <p>
-            ระบบจะบีบรูปเป็น WebP ก่อนอัปโหลด แล้วค่อยบันทึกข้อมูลหลัก รูปแปลน และแพ็กเกจทั้งหมด
-          </p>
           {uploadError ? <p className="admin-inline-error">{uploadError}</p> : null}
         </div>
         <button type="submit" className="admin-primary-button" disabled={isSaving}>
@@ -348,4 +345,3 @@ export function HouseEditorForm({ house }: HouseEditorFormProps) {
     </form>
   );
 }
-

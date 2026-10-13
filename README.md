@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# House builder website template
 
-## Getting Started
+Next.js + Supabase website for a house-building business. Includes public house plans, project portfolio, contact pages, and an admin area for content, images, and company settings.
 
-First, run the development server:
+**Start here:** [Client setup and handover](docs/CLIENT_SETUP.md). Do not deploy a clone with this repository's client branding, contact information, photos, or database credentials unchanged.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Local development
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Install Node.js 20+ and run `npm ci`.
+2. Copy `.env.example` to `.env.local` and fill in the new client's Supabase URL, publishable key, and site URL.
+3. Provision a **new** Supabase project using the migration steps in the client setup guide.
+4. Run `npm run dev` and open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project map
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Area | Location |
+| --- | --- |
+| Brand defaults, contact fallback, colors, navigation | `config/site.ts` |
+| Company/contact editor | `/admin/settings` |
+| House and project content | `/admin/houses`, `/admin/projects` |
+| Static logos and hero images | `public/assets/branding`, `public/assets/hero` |
+| Supabase tables, policies, and image bucket | `supabase/migrations` |
+| Environment template | `.env.example` |
 
-## Learn More
+Changes to content in the admin area are stored in Supabase. Code, logos, CSS, and static images require a Git commit and redeployment. Each client should have a separate Supabase project and deployment.
 
-To learn more about Next.js, take a look at the following resources:
+## Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run `npm run lint` and `npm run build` before release. The first client launch also needs the manual checks in [Client setup and handover](docs/CLIENT_SETUP.md), including image rights and admin access.

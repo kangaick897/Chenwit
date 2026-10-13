@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  CheckCircle2,
   FolderKanban,
   Home,
-  Image as ImageIcon,
   Settings,
 } from "lucide-react";
 
@@ -20,8 +18,6 @@ export const metadata: Metadata = {
 
 export default async function AdminDashboardPage() {
   const [houses, projects] = await Promise.all([getAdminHouses(), getAdminProjects()]);
-  const completedProjects = projects.filter((project) => project.status === "ส่งมอบแล้ว").length;
-
   return (
     <AdminShell
       active="dashboard"
@@ -38,16 +34,6 @@ export default async function AdminDashboardPage() {
           <FolderKanban size={22} strokeWidth={1.8} />
           <span>ผลงานทั้งหมด</span>
           <strong>{projects.length}</strong>
-        </div>
-        <div className="admin-stat-card">
-          <CheckCircle2 size={22} strokeWidth={1.8} />
-          <span>ผลงานส่งมอบแล้ว</span>
-          <strong>{completedProjects}</strong>
-        </div>
-        <div className="admin-stat-card">
-          <ImageIcon size={22} strokeWidth={1.8} />
-          <span>พื้นที่รูปภาพ</span>
-          <strong>Storage</strong>
         </div>
       </section>
 
@@ -79,4 +65,3 @@ export default async function AdminDashboardPage() {
     </AdminShell>
   );
 }
-

@@ -8,7 +8,6 @@ import { getPublicSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
   title: "เกี่ยวกับเรา",
-  description: "บริการออกแบบ ก่อสร้าง รีโนเวท ต่อเติม และตกแต่งภายในโดย CHENWIT HOUSE BUILDER",
 };
 
 const serviceSections = [

@@ -81,11 +81,6 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
             <span>คำอธิบาย SEO</span>
             <textarea name="seoDescription" defaultValue={seo.description ?? siteConfig.seo.description} rows={4} />
           </label>
-
-          <button type="submit" className="admin-primary-button">
-            <Save size={16} strokeWidth={1.8} />
-            บันทึกการตั้งค่า
-          </button>
         </section>
 
         <section className="admin-form-panel">
@@ -181,6 +176,13 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
             </span>
           </label>
         </section>
+
+        <div className="admin-settings-actions">
+          <button type="submit" className="admin-primary-button">
+            <Save size={16} strokeWidth={1.8} />
+            บันทึกการตั้งค่า
+          </button>
+        </div>
       </form>
     </AdminShell>
   );

@@ -335,7 +335,7 @@
 
 .admin-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 22px;
 }
@@ -386,6 +386,16 @@
 
 .admin-dashboard-grid-single {
   grid-template-columns: minmax(0, 680px);
+}
+
+.admin-settings-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-settings-actions .admin-primary-button {
+  min-width: 190px;
 }
 
 .admin-panel,
@@ -1352,6 +1362,10 @@
   .admin-house-editor,
   .admin-settings-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-settings-actions .admin-primary-button {
+    width: 100%;
   }
 
   .admin-table-head {
